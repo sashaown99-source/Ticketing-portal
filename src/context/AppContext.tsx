@@ -43,6 +43,7 @@ interface AppContextType {
   updateTicketStatus: (ticketId: string, newStatus: TicketStatus) => void;
   assignTicket: (ticketId: string, assignedToName: string) => void;
   resetState: () => void;
+  importDatabaseState: (data: { users: User[]; tickets: Ticket[]; comments: Comment[]; auditLogs: AuditLog[] }) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -285,6 +286,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAuditLogs(DUMMY_AUDIT_LOGS);
   };
 
+  const importDatabaseState = (data: { users: User[]; tickets: Ticket[]; comments: Comment[]; auditLogs: AuditLog[] }) => {
+    if (!data) return;
+    if (!Array.isArray(data.users) || !Array.isArray(data.tickets) || !Array.isArray(data.comments) || !Array.isArray(data.auditLogs)) {
+      throw new Error("Invalid database backup structure format.");
+    }
+
+    // Direct state updates
+    setUsers(data.users);
+    setTickets(data.tickets);
+    setComments(data.comments);
+    setAuditLogs(data.auditLogs);
+
+    // Sync currentUser profile matches
+    if (currentUser) {
+      const existsInNew = data.users.find(u => u.id === currentUser.id);
+      if (existsInNew) {
+        setCurrentUser(existsInNew);
+      }
+    }
+  };
+
   // Filter tickets by user's role access to ensure they only see what is relevant:
   // "jake jei role er access dawha hobe tara sudu er related ticket nia kaj korte parbe"
   const visibleTickets = React.useMemo(() => {
@@ -319,7 +341,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addComment,
       updateTicketStatus,
       assignTicket,
-      resetState
+      resetState,
+      importDatabaseState
     }}>
       {children}
     </AppContext.Provider>
