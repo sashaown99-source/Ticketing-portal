@@ -119,9 +119,8 @@ export default function Login() {
         {/* Dynamic Helpful Reference Notes */}
         <div className="bg-slate-50/75 p-3 rounded-xl border border-slate-100 text-[10px] text-slate-500 font-bold leading-relaxed space-y-1 text-center">
           <p>🔑 Evaluator Credentials Reference:</p>
-          <p className="text-slate-700">Master Admin: <span className="select-all underline">farhan.super@sheba.xyz</span></p>
-          <p className="text-slate-700">Support Desk: <span className="select-all underline">tanzim.agent@sheba.xyz</span></p>
-          <p className="text-slate-400 font-medium">(All default account passwords use: <code className="bg-slate-200/60 px-1 rounded font-bold">password</code>)</p>
+          <p className="text-slate-700">Administrator Access: <span className="select-all underline">sashaown99@gmail.com</span></p>
+          <p className="text-slate-450 font-medium">(Default password uses: <code className="bg-slate-250 px-1.5 py-0.5 rounded font-bold text-rose-500">password</code>)</p>
         </div>
 
       </div>

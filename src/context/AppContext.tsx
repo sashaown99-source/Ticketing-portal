@@ -55,7 +55,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (savedUsers) {
       try {
         const parsed = JSON.parse(savedUsers);
-        if (!Array.isArray(parsed) || parsed.length !== 1 || parsed[0].id !== 'emp1' || parsed[0].email !== 'sashaown99@gmail.com') {
+        // Only purge if it is old legacy data structure or Sasha is missing
+        if (!Array.isArray(parsed) || !parsed.some(u => u.email === 'sashaown99@gmail.com')) {
           shouldPurge = true;
         }
       } catch (e) {
@@ -71,10 +72,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       localStorage.removeItem('it_tickets');
       localStorage.removeItem('it_comments');
       localStorage.removeItem('it_audit_logs');
-      return DUMMY_USERS[0];
+      return null;
     }
     const saved = localStorage.getItem('it_current_user');
-    return saved ? JSON.parse(saved) : DUMMY_USERS[0];
+    return saved ? JSON.parse(saved) : null;
   });
 
   const [users, setUsers] = useState<User[]>(() => {
@@ -83,7 +84,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (savedUsers) {
       try {
         const parsed = JSON.parse(savedUsers);
-        if (!Array.isArray(parsed) || parsed.length !== 1 || parsed[0].id !== 'emp1' || parsed[0].email !== 'sashaown99@gmail.com') {
+        if (!Array.isArray(parsed) || !parsed.some(u => u.email === 'sashaown99@gmail.com')) {
           shouldPurge = true;
         }
       } catch (e) {
@@ -106,7 +107,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (savedUsers) {
       try {
         const parsed = JSON.parse(savedUsers);
-        if (!Array.isArray(parsed) || parsed.length !== 1 || parsed[0].id !== 'emp1' || parsed[0].email !== 'sashaown99@gmail.com') {
+        if (!Array.isArray(parsed) || !parsed.some(u => u.email === 'sashaown99@gmail.com')) {
           shouldPurge = true;
         }
       } catch (e) {
@@ -129,7 +130,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (savedUsers) {
       try {
         const parsed = JSON.parse(savedUsers);
-        if (!Array.isArray(parsed) || parsed.length !== 1 || parsed[0].id !== 'emp1' || parsed[0].email !== 'sashaown99@gmail.com') {
+        if (!Array.isArray(parsed) || !parsed.some(u => u.email === 'sashaown99@gmail.com')) {
           shouldPurge = true;
         }
       } catch (e) {
@@ -152,7 +153,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (savedUsers) {
       try {
         const parsed = JSON.parse(savedUsers);
-        if (!Array.isArray(parsed) || parsed.length !== 1 || parsed[0].id !== 'emp1' || parsed[0].email !== 'sashaown99@gmail.com') {
+        if (!Array.isArray(parsed) || !parsed.some(u => u.email === 'sashaown99@gmail.com')) {
           shouldPurge = true;
         }
       } catch (e) {

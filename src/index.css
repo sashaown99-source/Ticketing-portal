@@ -5,17 +5,17 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  --color-blue-50: #fff1f2;
-  --color-blue-100: #ffe4e6;
-  --color-blue-200: #fecdd3;
-  --color-blue-300: #fda4af;
+  --color-blue-50: #fdf2f8;
+  --color-blue-100: #fce7f3;
+  --color-blue-200: #fbcfe8;
+  --color-blue-300: #f9a8d4;
   --color-blue-400: #f43f5e;
-  --color-blue-500: #e11d48;
-  --color-blue-600: #be123c;
-  --color-blue-700: #9f1239;
-  --color-blue-800: #881337;
-  --color-blue-900: #5c071d;
-  --color-blue-950: #3c0310;
+  --color-blue-500: #f92552;
+  --color-blue-600: #d0113c;
+  --color-blue-700: #9d0c2c;
+  --color-blue-800: #7c0b25;
+  --color-blue-900: #500618;
+  --color-blue-950: #29020a;
 }
 
 body {
