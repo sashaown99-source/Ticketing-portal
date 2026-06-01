@@ -116,12 +116,7 @@ export default function Login() {
           </button>
         </form>
 
-        {/* Dynamic Helpful Reference Notes */}
-        <div className="bg-slate-50/75 p-3 rounded-xl border border-slate-100 text-[10px] text-slate-500 font-bold leading-relaxed space-y-1 text-center">
-          <p>🔑 Evaluator Credentials Reference:</p>
-          <p className="text-slate-700">Administrator Access: <span className="select-all underline">sashaown99@gmail.com</span></p>
-          <p className="text-slate-450 font-medium">(Default password uses: <code className="bg-slate-250 px-1.5 py-0.5 rounded font-bold text-rose-500">password</code>)</p>
-        </div>
+
 
       </div>
     </div>

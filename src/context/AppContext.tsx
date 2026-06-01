@@ -50,28 +50,15 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    const savedUsers = localStorage.getItem('it_users');
-    let shouldPurge = false;
-    if (savedUsers) {
-      try {
-        const parsed = JSON.parse(savedUsers);
-        // Only purge if it is old legacy data structure or Sasha is missing
-        if (!Array.isArray(parsed) || !parsed.some(u => u.email === 'sashaown99@gmail.com')) {
-          shouldPurge = true;
-        }
-      } catch (e) {
-        shouldPurge = true;
-      }
-    } else {
-      shouldPurge = true;
-    }
-
-    if (shouldPurge) {
+    // One-time migration to clean up legacy data structures
+    const migrated = localStorage.getItem('it_migration_v2');
+    if (!migrated) {
       localStorage.removeItem('it_current_user');
       localStorage.removeItem('it_users');
       localStorage.removeItem('it_tickets');
       localStorage.removeItem('it_comments');
       localStorage.removeItem('it_audit_logs');
+      localStorage.setItem('it_migration_v2', 'done');
       return null;
     }
     const saved = localStorage.getItem('it_current_user');
@@ -79,93 +66,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [users, setUsers] = useState<User[]>(() => {
-    const savedUsers = localStorage.getItem('it_users');
-    let shouldPurge = false;
-    if (savedUsers) {
-      try {
-        const parsed = JSON.parse(savedUsers);
-        if (!Array.isArray(parsed) || !parsed.some(u => u.email === 'sashaown99@gmail.com')) {
-          shouldPurge = true;
-        }
-      } catch (e) {
-        shouldPurge = true;
-      }
-    } else {
-      shouldPurge = true;
-    }
-
-    if (shouldPurge) {
-      return DUMMY_USERS;
-    }
     const saved = localStorage.getItem('it_users');
     return saved ? JSON.parse(saved) : DUMMY_USERS;
   });
 
   const [tickets, setTickets] = useState<Ticket[]>(() => {
-    const savedUsers = localStorage.getItem('it_users');
-    let shouldPurge = false;
-    if (savedUsers) {
-      try {
-        const parsed = JSON.parse(savedUsers);
-        if (!Array.isArray(parsed) || !parsed.some(u => u.email === 'sashaown99@gmail.com')) {
-          shouldPurge = true;
-        }
-      } catch (e) {
-        shouldPurge = true;
-      }
-    } else {
-      shouldPurge = true;
-    }
-
-    if (shouldPurge) {
-      return DUMMY_TICKETS;
-    }
     const saved = localStorage.getItem('it_tickets');
     return saved ? JSON.parse(saved) : DUMMY_TICKETS;
   });
 
   const [comments, setComments] = useState<Comment[]>(() => {
-    const savedUsers = localStorage.getItem('it_users');
-    let shouldPurge = false;
-    if (savedUsers) {
-      try {
-        const parsed = JSON.parse(savedUsers);
-        if (!Array.isArray(parsed) || !parsed.some(u => u.email === 'sashaown99@gmail.com')) {
-          shouldPurge = true;
-        }
-      } catch (e) {
-        shouldPurge = true;
-      }
-    } else {
-      shouldPurge = true;
-    }
-
-    if (shouldPurge) {
-      return DUMMY_COMMENTS;
-    }
     const saved = localStorage.getItem('it_comments');
     return saved ? JSON.parse(saved) : DUMMY_COMMENTS;
   });
 
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(() => {
-    const savedUsers = localStorage.getItem('it_users');
-    let shouldPurge = false;
-    if (savedUsers) {
-      try {
-        const parsed = JSON.parse(savedUsers);
-        if (!Array.isArray(parsed) || !parsed.some(u => u.email === 'sashaown99@gmail.com')) {
-          shouldPurge = true;
-        }
-      } catch (e) {
-        shouldPurge = true;
-      }
-    } else {
-      shouldPurge = true;
-    }
-
-    if (shouldPurge) {
-      return DUMMY_AUDIT_LOGS;
-    }
     const saved = localStorage.getItem('it_audit_logs');
     return saved ? JSON.parse(saved) : DUMMY_AUDIT_LOGS;
   });
