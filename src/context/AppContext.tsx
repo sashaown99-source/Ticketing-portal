@@ -51,7 +51,21 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
     const savedUsers = localStorage.getItem('it_users');
-    if (savedUsers && savedUsers.includes('samantha.super@sheba.xyz')) {
+    let shouldPurge = false;
+    if (savedUsers) {
+      try {
+        const parsed = JSON.parse(savedUsers);
+        if (!Array.isArray(parsed) || parsed.length !== 1 || parsed[0].id !== 'emp1' || parsed[0].email !== 'sashaown99@gmail.com') {
+          shouldPurge = true;
+        }
+      } catch (e) {
+        shouldPurge = true;
+      }
+    } else {
+      shouldPurge = true;
+    }
+
+    if (shouldPurge) {
       localStorage.removeItem('it_current_user');
       localStorage.removeItem('it_users');
       localStorage.removeItem('it_tickets');
@@ -65,7 +79,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [users, setUsers] = useState<User[]>(() => {
     const savedUsers = localStorage.getItem('it_users');
-    if (savedUsers && savedUsers.includes('samantha.super@sheba.xyz')) {
+    let shouldPurge = false;
+    if (savedUsers) {
+      try {
+        const parsed = JSON.parse(savedUsers);
+        if (!Array.isArray(parsed) || parsed.length !== 1 || parsed[0].id !== 'emp1' || parsed[0].email !== 'sashaown99@gmail.com') {
+          shouldPurge = true;
+        }
+      } catch (e) {
+        shouldPurge = true;
+      }
+    } else {
+      shouldPurge = true;
+    }
+
+    if (shouldPurge) {
       return DUMMY_USERS;
     }
     const saved = localStorage.getItem('it_users');
@@ -74,7 +102,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [tickets, setTickets] = useState<Ticket[]>(() => {
     const savedUsers = localStorage.getItem('it_users');
-    if (savedUsers && savedUsers.includes('samantha.super@sheba.xyz')) {
+    let shouldPurge = false;
+    if (savedUsers) {
+      try {
+        const parsed = JSON.parse(savedUsers);
+        if (!Array.isArray(parsed) || parsed.length !== 1 || parsed[0].id !== 'emp1' || parsed[0].email !== 'sashaown99@gmail.com') {
+          shouldPurge = true;
+        }
+      } catch (e) {
+        shouldPurge = true;
+      }
+    } else {
+      shouldPurge = true;
+    }
+
+    if (shouldPurge) {
       return DUMMY_TICKETS;
     }
     const saved = localStorage.getItem('it_tickets');
@@ -83,7 +125,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [comments, setComments] = useState<Comment[]>(() => {
     const savedUsers = localStorage.getItem('it_users');
-    if (savedUsers && savedUsers.includes('samantha.super@sheba.xyz')) {
+    let shouldPurge = false;
+    if (savedUsers) {
+      try {
+        const parsed = JSON.parse(savedUsers);
+        if (!Array.isArray(parsed) || parsed.length !== 1 || parsed[0].id !== 'emp1' || parsed[0].email !== 'sashaown99@gmail.com') {
+          shouldPurge = true;
+        }
+      } catch (e) {
+        shouldPurge = true;
+      }
+    } else {
+      shouldPurge = true;
+    }
+
+    if (shouldPurge) {
       return DUMMY_COMMENTS;
     }
     const saved = localStorage.getItem('it_comments');
@@ -92,7 +148,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(() => {
     const savedUsers = localStorage.getItem('it_users');
-    if (savedUsers && savedUsers.includes('samantha.super@sheba.xyz')) {
+    let shouldPurge = false;
+    if (savedUsers) {
+      try {
+        const parsed = JSON.parse(savedUsers);
+        if (!Array.isArray(parsed) || parsed.length !== 1 || parsed[0].id !== 'emp1' || parsed[0].email !== 'sashaown99@gmail.com') {
+          shouldPurge = true;
+        }
+      } catch (e) {
+        shouldPurge = true;
+      }
+    } else {
+      shouldPurge = true;
+    }
+
+    if (shouldPurge) {
       return DUMMY_AUDIT_LOGS;
     }
     const saved = localStorage.getItem('it_audit_logs');
