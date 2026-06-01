@@ -12,8 +12,11 @@ export default function Login() {
     e.preventDefault();
     setErrorMsg('');
 
-    const trimmedEmail = emailInput.trim().toLowerCase();
-    const user = users.find(u => u.email.toLowerCase() === trimmedEmail);
+    const trimmedInput = emailInput.trim().toLowerCase();
+    const user = users.find(u => 
+      (u.email && u.email.toLowerCase() === trimmedInput) ||
+      (u.username && u.username.toLowerCase() === trimmedInput)
+    );
 
     if (user) {
       if (user.isActive === false) {
@@ -32,7 +35,7 @@ export default function Login() {
 
       setCurrentUser(user);
     } else {
-      setErrorMsg('No account found with this email Address.');
+      setErrorMsg('No account found with this email Address or corporate username.');
     }
   };
 

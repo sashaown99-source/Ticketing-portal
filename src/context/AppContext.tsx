@@ -48,19 +48,21 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+// One-time migration to clean up legacy data structures safely at the module level
+if (typeof window !== 'undefined') {
+  const migrated = localStorage.getItem('it_migration_v2');
+  if (!migrated) {
+    localStorage.removeItem('it_current_user');
+    localStorage.removeItem('it_users');
+    localStorage.removeItem('it_tickets');
+    localStorage.removeItem('it_comments');
+    localStorage.removeItem('it_audit_logs');
+    localStorage.setItem('it_migration_v2', 'done');
+  }
+}
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    // One-time migration to clean up legacy data structures
-    const migrated = localStorage.getItem('it_migration_v2');
-    if (!migrated) {
-      localStorage.removeItem('it_current_user');
-      localStorage.removeItem('it_users');
-      localStorage.removeItem('it_tickets');
-      localStorage.removeItem('it_comments');
-      localStorage.removeItem('it_audit_logs');
-      localStorage.setItem('it_migration_v2', 'done');
-      return null;
-    }
     const saved = localStorage.getItem('it_current_user');
     return saved ? JSON.parse(saved) : null;
   });
