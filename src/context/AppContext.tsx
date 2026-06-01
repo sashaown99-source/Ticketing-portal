@@ -18,6 +18,16 @@ interface AppContextType {
     department?: string,
     password?: string
   ) => User;
+  updateUser: (
+    id: string,
+    name: string,
+    email: string,
+    role: Role,
+    username?: string,
+    employeeId?: string,
+    department?: string,
+    password?: string
+  ) => void;
   addTicket: (
     subject: string,
     description: string,
@@ -105,6 +115,38 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     setUsers(prev => [...prev, newUser]);
     return newUser;
+  };
+
+  const updateUser = (
+    id: string,
+    name: string,
+    email: string,
+    role: Role,
+    username?: string,
+    employeeId?: string,
+    department?: string,
+    password?: string
+  ) => {
+    setUsers(prev => prev.map(u => {
+      if (u.id === id) {
+        const updated = {
+          ...u,
+          name,
+          email,
+          role,
+          username,
+          employeeId,
+          department,
+          password
+        };
+        // sync currently logged in user if they updated themselves
+        if (currentUser && currentUser.id === id) {
+          setCurrentUser(updated);
+        }
+        return updated;
+      }
+      return u;
+    }));
   };
 
   const addTicket = (
@@ -268,6 +310,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       auditLogs,
       setCurrentUser,
       registerUser,
+      updateUser,
       addTicket,
       addComment,
       updateTicketStatus,

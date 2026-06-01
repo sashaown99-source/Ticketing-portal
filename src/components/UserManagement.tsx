@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { Role } from '../types';
-import { UserPlus, Users, Key, Mail, Shield, Building, Hash, Eye, EyeOff } from 'lucide-react';
+import { Role, User } from '../types';
+import { UserPlus, Users, Key, Mail, Shield, Building, Hash, Eye, EyeOff, Edit2, XCircle } from 'lucide-react';
 
 export default function UserManagement() {
-  const { users, registerUser } = useApp();
+  const { users, registerUser, updateUser } = useApp();
   
-  // States for user register form
+  // State for tracking the user being edited administratively
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+
+  // States for user register/edit form
   const [name, setName] = useState('');
   const [employeeId, setEmployeeId] = useState('');
   const [department, setDepartment] = useState('');
@@ -19,6 +22,32 @@ export default function UserManagement() {
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
+  const handleStartEdit = (userToEdit: User) => {
+    setEditingUser(userToEdit);
+    setName(userToEdit.name);
+    setEmployeeId(userToEdit.employeeId || '');
+    setDepartment(userToEdit.department || '');
+    setRole(userToEdit.role);
+    setEmail(userToEdit.email);
+    setUsername(userToEdit.username || '');
+    setPassword(userToEdit.password || '');
+    setSuccessMsg('');
+    setErrorMsg('');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingUser(null);
+    setName('');
+    setEmployeeId('');
+    setDepartment('');
+    setRole('agent');
+    setEmail('');
+    setUsername('');
+    setPassword('');
+    setSuccessMsg('');
+    setErrorMsg('');
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSuccessMsg('');
@@ -29,9 +58,14 @@ export default function UserManagement() {
       return;
     }
 
-    const emailExists = users.some(u => u.email.toLowerCase() === email.trim().toLowerCase());
-    const usernameExists = users.some(u => u.username?.toLowerCase() === username.trim().toLowerCase());
-    const empIdExists = users.some(u => u.employeeId?.toLowerCase() === employeeId.trim().toLowerCase());
+    // Filter out the currently edited user when validating uniqueness
+    const otherUsers = editingUser 
+      ? users.filter(u => u.id !== editingUser.id) 
+      : users;
+
+    const emailExists = otherUsers.some(u => u.email.toLowerCase() === email.trim().toLowerCase());
+    const usernameExists = otherUsers.some(u => u.username?.toLowerCase() === username.trim().toLowerCase());
+    const empIdExists = otherUsers.some(u => u.employeeId?.toLowerCase() === employeeId.trim().toLowerCase());
 
     if (emailExists) {
       setErrorMsg('A user with this Email address is already registered.');
@@ -46,20 +80,35 @@ export default function UserManagement() {
       return;
     }
 
-    // Register user with all options
-    registerUser(
-      name.trim(),
-      email.trim(),
-      role,
-      username.trim(),
-      employeeId.trim(),
-      department.trim(),
-      password.trim()
-    );
-
-    setSuccessMsg(`Successfully created new user account for ${name.trim()} (${role})!`);
+    if (editingUser) {
+      // Perform administrative update
+      updateUser(
+        editingUser.id,
+        name.trim(),
+        email.trim(),
+        role,
+        username.trim(),
+        employeeId.trim(),
+        department.trim(),
+        password.trim()
+      );
+      setSuccessMsg(`Successfully updated user account details for ${name.trim()} (${role})!`);
+      setEditingUser(null);
+    } else {
+      // Register new user with choices
+      registerUser(
+        name.trim(),
+        email.trim(),
+        role,
+        username.trim(),
+        employeeId.trim(),
+        department.trim(),
+        password.trim()
+      );
+      setSuccessMsg(`Successfully created new user account for ${name.trim()} (${role})!`);
+    }
     
-    // Clear inputs
+    // Clear inputs after successful submission/update
     setName('');
     setEmployeeId('');
     setDepartment('');
@@ -101,11 +150,33 @@ export default function UserManagement() {
 
       <div className="grid lg:grid-cols-12 gap-6">
         
-        {/* Left Side: Create User Form */}
-        <div className="lg:col-span-5 bg-[#0d1527] border border-slate-800/80 rounded-2xl p-6 shadow-sm h-fit space-y-4">
-          <div className="flex items-center gap-2 border-b border-slate-800 pb-3 mb-2">
-            <UserPlus className="w-4.5 h-4.5 text-blue-400" />
-            <span className="font-bold text-xs uppercase tracking-wider text-slate-200">Add New Sheba.xyz Account</span>
+        {/* Left Side: Create/Edit User Form */}
+        <div className={`lg:col-span-5 bg-[#0d1527] border rounded-2xl p-6 shadow-sm h-fit space-y-4 transition-all duration-300 ${
+          editingUser ? 'border-amber-500/40 bg-[#121a30] shadow-amber-500/5' : 'border-slate-800/80'
+        }`}>
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-2">
+            <div className="flex items-center gap-2">
+              {editingUser ? (
+                <>
+                  <Edit2 className="w-4.5 h-4.5 text-amber-400" />
+                  <span className="font-bold text-xs uppercase tracking-wider text-amber-200">Edit Sheba.xyz Account</span>
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-4.5 h-4.5 text-blue-400" />
+                  <span className="font-bold text-xs uppercase tracking-wider text-slate-200">Add New Sheba.xyz Account</span>
+                </>
+              )}
+            </div>
+            {editingUser && (
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="text-[10px] bg-slate-800 hover:bg-slate-700 font-bold px-2.5 py-1 rounded text-red-400 flex items-center gap-1 cursor-pointer transition border border-slate-700/60"
+              >
+                <XCircle className="w-3.5 h-3.5" /> Cancel
+              </button>
+            )}
           </div>
 
           {successMsg && (
@@ -250,11 +321,25 @@ export default function UserManagement() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-2.5 rounded-xl transition shadow-md shadow-blue-500/10 flex items-center justify-center gap-2 cursor-pointer mt-4"
+              className={`w-full font-bold py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer mt-4 ${
+                editingUser 
+                  ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-amber-500/10' 
+                  : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-blue-500/10'
+              }`}
             >
-              <UserPlus className="w-4 h-4" />
-              Register Sheba User
+              {editingUser ? <Edit2 className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+              {editingUser ? 'Save Updates' : 'Register Sheba User'}
             </button>
+
+            {editingUser && (
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 rounded-xl transition border border-slate-700/60 font-semibold cursor-pointer text-center text-xs mt-1 block"
+              >
+                Cancel and Clear
+              </button>
+            )}
           </form>
         </div>
 
@@ -272,12 +357,18 @@ export default function UserManagement() {
                     <th className="px-5 py-3">Personnel</th>
                     <th className="px-5 py-3">ID / Dept</th>
                     <th className="px-5 py-3">Username</th>
-                    <th className="px-5 py-3 font-medium text-right">Access</th>
+                    <th className="px-5 py-3 font-medium text-center">Access Role</th>
+                    <th className="px-5 py-3 font-medium text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800 text-[11px]">
                   {users.map(u => (
-                    <tr key={u.id} className="hover:bg-slate-800/30 transition">
+                    <tr 
+                      key={u.id} 
+                      className={`hover:bg-slate-800/30 transition ${
+                        editingUser?.id === u.id ? 'bg-amber-500/5 border-l-2 border-amber-500/30' : ''
+                      }`}
+                    >
                       {/* Avatar & Name & Email */}
                       <td className="px-5 py-3 flex items-center gap-2">
                         <img 
@@ -304,12 +395,27 @@ export default function UserManagement() {
                       </td>
 
                       {/* Access / Role Badge */}
-                      <td className="px-5 py-3 text-right">
+                      <td className="px-5 py-3 text-center">
                         <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
                           ROLE_BADGE_STYLE[u.role] || 'bg-slate-500/10 text-slate-400 border border-slate-500/20'
                         }`}>
                           {u.role}
                         </span>
+                      </td>
+
+                      {/* Edit actions button */}
+                      <td className="px-5 py-3 text-right">
+                        <button
+                          onClick={() => handleStartEdit(u)}
+                          className={`p-1 px-3.5 rounded text-[10px] font-bold transition inline-flex items-center gap-1.5 cursor-pointer border ${
+                            editingUser?.id === u.id
+                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/30 shadow-sm'
+                              : 'bg-blue-600/15 hover:bg-blue-600/25 text-blue-400 border-blue-500/25'
+                          }`}
+                        >
+                          <Edit2 className="w-3 h-3" />
+                          Edit
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -319,7 +425,7 @@ export default function UserManagement() {
           </div>
 
           <div className="p-4 bg-[#121c33]/40 border-t border-slate-800/80 text-[10px] text-slate-400 font-bold leading-relaxed">
-            💡 Quick Tip: Newly created users immediately populate in the top "SANDBOX SIMULATOR" profiles bar above, allowing you to instantly switch login active identities to test custom ticket creations and workflows.
+            💡 Quick Tip: Newly created or updated users immediately populate in the top "SANDBOX SIMULATOR" profiles bar above, allowing you to instantly switch login active identities to test custom ticket creations and workflows.
           </div>
         </div>
 

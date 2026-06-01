@@ -5,7 +5,6 @@ import Dashboard from './components/Dashboard';
 import UserPortal from './components/UserPortal';
 import CreateTicket from './components/CreateTicket';
 import TicketDetail from './components/TicketDetail';
-import BlueprintDownloader from './components/BlueprintDownloader';
 import UserManagement from './components/UserManagement';
 
 // Icons
@@ -157,7 +156,7 @@ function AppContent() {
                   }`}
                 >
                   <Users className="w-4 h-4 shrink-0 text-slate-400 group-hover:text-blue-400" />
-                  User Management
+                  Create a New User
                 </button>
               )}
 
@@ -183,18 +182,6 @@ function AppContent() {
               >
                 <PlusCircle className="w-4 h-4 shrink-0 text-slate-400" />
                 Create a New Ticket
-              </button>
-
-              <button
-                onClick={() => { setActiveTab('blueprints'); setMobileMenuOpen(false); }}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition cursor-pointer ${
-                  activeTab === 'blueprints'
-                    ? 'bg-blue-600/15 text-blue-400 font-bold border border-blue-500/20 bg-blue-500/5' 
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
-                }`}
-              >
-                <FolderLock className="w-4 h-4 shrink-0 text-slate-400" />
-                Developer Blueprints
               </button>
 
             </nav>
@@ -254,10 +241,6 @@ function AppContent() {
 
           {activeTab === 'create_ticket' && (
             <CreateTicket onSuccess={handleCreateSuccess} />
-          )}
-
-          {activeTab === 'blueprints' && (
-            <BlueprintDownloader />
           )}
 
           {activeTab === 'ticket_detail' && selectedTicketId && (
