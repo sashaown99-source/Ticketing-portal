@@ -50,27 +50,51 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    const savedUsers = localStorage.getItem('it_users');
+    if (savedUsers && savedUsers.includes('samantha.super@sheba.xyz')) {
+      localStorage.removeItem('it_current_user');
+      localStorage.removeItem('it_users');
+      localStorage.removeItem('it_tickets');
+      localStorage.removeItem('it_comments');
+      localStorage.removeItem('it_audit_logs');
+      return DUMMY_USERS[0];
+    }
     const saved = localStorage.getItem('it_current_user');
-    // Default to Farhan Ahmed (Admin access) to see stats first
-    return saved ? JSON.parse(saved) : DUMMY_USERS[7];
+    return saved ? JSON.parse(saved) : DUMMY_USERS[0];
   });
 
   const [users, setUsers] = useState<User[]>(() => {
+    const savedUsers = localStorage.getItem('it_users');
+    if (savedUsers && savedUsers.includes('samantha.super@sheba.xyz')) {
+      return DUMMY_USERS;
+    }
     const saved = localStorage.getItem('it_users');
     return saved ? JSON.parse(saved) : DUMMY_USERS;
   });
 
   const [tickets, setTickets] = useState<Ticket[]>(() => {
+    const savedUsers = localStorage.getItem('it_users');
+    if (savedUsers && savedUsers.includes('samantha.super@sheba.xyz')) {
+      return DUMMY_TICKETS;
+    }
     const saved = localStorage.getItem('it_tickets');
     return saved ? JSON.parse(saved) : DUMMY_TICKETS;
   });
 
   const [comments, setComments] = useState<Comment[]>(() => {
+    const savedUsers = localStorage.getItem('it_users');
+    if (savedUsers && savedUsers.includes('samantha.super@sheba.xyz')) {
+      return DUMMY_COMMENTS;
+    }
     const saved = localStorage.getItem('it_comments');
     return saved ? JSON.parse(saved) : DUMMY_COMMENTS;
   });
 
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(() => {
+    const savedUsers = localStorage.getItem('it_users');
+    if (savedUsers && savedUsers.includes('samantha.super@sheba.xyz')) {
+      return DUMMY_AUDIT_LOGS;
+    }
     const saved = localStorage.getItem('it_audit_logs');
     return saved ? JSON.parse(saved) : DUMMY_AUDIT_LOGS;
   });
@@ -279,7 +303,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.removeItem('it_tickets');
     localStorage.removeItem('it_comments');
     localStorage.removeItem('it_audit_logs');
-    setCurrentUser(DUMMY_USERS[2]); // Back to Jenkins
+    setCurrentUser(DUMMY_USERS[0]); // Reset to default admin
     setUsers(DUMMY_USERS);
     setTickets(DUMMY_TICKETS);
     setComments(DUMMY_COMMENTS);
