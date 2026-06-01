@@ -1,0 +1,6 @@
+{
+  "name": "IT Support Ticket Portal",
+  "description": "A comprehensive IT Support Ticket Management Portal with User and Admin roles, ticket creation, real-time status tracking, comments, dashboards, and exportable PHP/MySQL configuration blueprints.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
