@@ -12,10 +12,22 @@ provider.addScope('https://www.googleapis.com/auth/drive');
 provider.addScope('https://www.googleapis.com/auth/drive.file');
 
 let isSigningIn = false;
-let cachedAccessToken: string | null = null;
+let cachedAccessToken: string | null = localStorage.getItem('sheba_drive_token');
 
 // Track active listeners
 const listeners = new Set<(user: User | null, token: string | null) => void>();
+
+// Helper to handle 401 auth expiration
+const handleAuthError = (status: number) => {
+  if (status === 401) {
+    console.warn("OAuth Access Token expired. Resetting Google Drive session.");
+    cachedAccessToken = null;
+    localStorage.removeItem('sheba_drive_token');
+    auth.signOut().catch(() => {});
+    listeners.forEach(listener => listener(null, null));
+    throw new Error('Google Account session expired. Please reconnect your account to continue.');
+  }
+};
 
 // Initialize auth state listener.
 export const initAuth = (
@@ -29,6 +41,7 @@ export const initAuth = (
   const unsubscribe = onAuthStateChanged(auth, async (user: User | null) => {
     if (!user) {
       cachedAccessToken = null;
+      localStorage.removeItem('sheba_drive_token');
     }
     listeners.forEach(listener => listener(user, cachedAccessToken));
   });
@@ -50,6 +63,7 @@ export const googleSignIn = async (): Promise<{ user: User; accessToken: string 
     }
 
     cachedAccessToken = credential.accessToken;
+    localStorage.setItem('sheba_drive_token', cachedAccessToken);
     listeners.forEach(listener => listener(result.user, cachedAccessToken));
     return { user: result.user, accessToken: cachedAccessToken };
   } catch (error: any) {
@@ -69,6 +83,7 @@ export const getAccessToken = async (): Promise<string | null> => {
 export const logout = async () => {
   await auth.signOut();
   cachedAccessToken = null;
+  localStorage.removeItem('sheba_drive_token');
   listeners.forEach(listener => listener(null, null));
 };
 
@@ -83,16 +98,90 @@ export interface DriveFile {
 export const GOOGLE_DRIVE_FOLDER_ID = '141fYIOM4J2Y1YamglTTOF2sZRSs_mTfp';
 
 /**
+ * Custom Folder Discovery and Creation:
+ * 1. Checks if designated custom folder is accessible
+ * 2. If not, queries for "Sheba Support Backups" folder
+ * 3. If not found, creates "Sheba Support Backups" folder
+ * 4. Fallback to 'root'
+ */
+export const getOrCreateBackupFolder = async (token: string): Promise<string> => {
+  // 1. Try preconfigured folder
+  try {
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files/${GOOGLE_DRIVE_FOLDER_ID}?fields=id`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+      return GOOGLE_DRIVE_FOLDER_ID;
+    }
+    if (res.status === 401) {
+      handleAuthError(401);
+    }
+  } catch (err: any) {
+    if (err.message && err.message.includes('expired')) throw err;
+    console.warn("Custom folder not accessible, assessing options...");
+  }
+
+  // 2. Look for "Sheba Support Backups"
+  try {
+    const queryStr = decodeURIComponent("mimeType='application/vnd.google-apps.folder' and name='Sheba Support Backups' and trashed=false");
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent("mimeType='application/vnd.google-apps.folder' and name='Sheba Support Backups' and trashed=false")}&fields=files(id)`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.files && data.files.length > 0) {
+        return data.files[0].id;
+      }
+    }
+    if (res.status === 401) {
+      handleAuthError(401);
+    }
+  } catch (err: any) {
+    if (err.message && err.message.includes('expired')) throw err;
+    console.warn("Backup folder search failed:", err);
+  }
+
+  // 3. Create "Sheba Support Backups" folder
+  try {
+    const res = await fetch('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: 'Sheba Support Backups',
+        mimeType: 'application/vnd.google-apps.folder'
+      })
+    });
+    if (res.ok) {
+      const folder = await res.json();
+      return folder.id;
+    }
+    if (res.status === 401) {
+      handleAuthError(401);
+    }
+  } catch (err: any) {
+    if (err.message && err.message.includes('expired')) throw err;
+    console.error("Backup folder creation failed:", err);
+  }
+
+  // 4. Default fallback to root
+  return 'root';
+};
+
+/**
  * Exports application database state into Google Drive folder
  */
 export const exportDatabaseToDrive = async (token: string, dbData: any): Promise<any> => {
+  const folderId = await getOrCreateBackupFolder(token);
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const fileName = `sheba_ticketing_db_${timestamp}.json`;
 
   const metadata = {
     name: fileName,
     mimeType: 'application/json',
-    parents: [GOOGLE_DRIVE_FOLDER_ID]
+    parents: [folderId]
   };
 
   const boundary = 'sheba_drive_boundary';
@@ -117,6 +206,7 @@ export const exportDatabaseToDrive = async (token: string, dbData: any): Promise
   });
 
   if (!response.ok) {
+    handleAuthError(response.status);
     const errText = await response.text();
     throw new Error(`Google Drive Upload Failed: ${response.status} - ${errText}`);
   }
@@ -128,7 +218,8 @@ export const exportDatabaseToDrive = async (token: string, dbData: any): Promise
  * List existing database backups in the Drive Folder
  */
 export const listBackupsInDrive = async (token: string): Promise<DriveFile[]> => {
-  const query = `'${GOOGLE_DRIVE_FOLDER_ID}' in parents and name contains 'sheba_ticketing_db' and trashed = false`;
+  const folderId = await getOrCreateBackupFolder(token);
+  const query = `'${folderId}' in parents and name contains 'sheba_ticketing_db' and trashed = false`;
   const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name,createdTime,size)&orderBy=createdTime+desc`;
 
   const response = await fetch(url, {
@@ -139,6 +230,7 @@ export const listBackupsInDrive = async (token: string): Promise<DriveFile[]> =>
   });
 
   if (!response.ok) {
+    handleAuthError(response.status);
     const errText = await response.text();
     throw new Error(`Failed listing backup files: ${response.status} - ${errText}`);
   }
@@ -161,6 +253,7 @@ export const downloadBackupContent = async (token: string, fileId: string): Prom
   });
 
   if (!response.ok) {
+    handleAuthError(response.status);
     const errText = await response.text();
     throw new Error(`Failed to download backup data: ${response.status} - ${errText}`);
   }

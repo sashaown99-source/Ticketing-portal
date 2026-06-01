@@ -8,7 +8,8 @@ import {
   listBackupsInDrive, 
   downloadBackupContent, 
   DriveFile, 
-  GOOGLE_DRIVE_FOLDER_ID 
+  GOOGLE_DRIVE_FOLDER_ID,
+  getOrCreateBackupFolder
 } from '../lib/googleDriveService';
 import { 
   Cloud, 
@@ -38,6 +39,7 @@ export default function DriveDatabaseSync() {
   const [isExporting, setIsExporting] = useState(false);
   const [restoreConfirmFile, setRestoreConfirmFile] = useState<DriveFile | null>(null);
   const [isRestoring, setIsRestoring] = useState(false);
+  const [activeFolderId, setActiveFolderId] = useState<string>(GOOGLE_DRIVE_FOLDER_ID);
 
   // Subscribe to Authentication state
   useEffect(() => {
@@ -85,12 +87,14 @@ export default function DriveDatabaseSync() {
     setIsLoadingBackups(true);
     setStatusMessage({ text: '', type: null });
     try {
+      const resolvedFolder = await getOrCreateBackupFolder(authToken);
+      setActiveFolderId(resolvedFolder);
       const filesList = await listBackupsInDrive(authToken);
       setBackups(filesList);
     } catch (err: any) {
       console.error(err);
       setStatusMessage({ 
-        text: 'Failed to access Google Drive backups inside specified folder.', 
+        text: err.message || 'Failed to access Google Drive backups.', 
         type: 'error' 
       });
     } finally {
@@ -113,9 +117,21 @@ export default function DriveDatabaseSync() {
     };
 
     try {
+      const resolvedFolder = await getOrCreateBackupFolder(authToken);
+      setActiveFolderId(resolvedFolder);
       const result = await exportDatabaseToDrive(authToken, localDatabaseBundle);
+      
+      let successMsg = `Export succeeded! Database Backup "${result.name}" saved.`;
+      if (resolvedFolder !== GOOGLE_DRIVE_FOLDER_ID) {
+        if (resolvedFolder === 'root') {
+          successMsg += ' (Saved directly in your main Google Drive root as fallback folder)';
+        } else {
+          successMsg += ' (Saved inside a newly created "Sheba Support Backups" folder since the custom folder was not accessible)';
+        }
+      }
+      
       setStatusMessage({ 
-        text: `Export succeeded! Database Backup "${result.name}" saved in specified folder.`, 
+        text: successMsg, 
         type: 'success' 
       });
       // Refresh list
@@ -258,13 +274,13 @@ export default function DriveDatabaseSync() {
             <div className="pt-2.5 border-t border-slate-850 space-y-2">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Drive Target Directory</span>
               <a 
-                href={`https://drive.google.com/drive/u/0/folders/${GOOGLE_DRIVE_FOLDER_ID}`}
+                href={activeFolderId === 'root' ? 'https://drive.google.com/drive/u/0/my-drive' : `https://drive.google.com/drive/u/0/folders/${activeFolderId}`}
                 target="_blank" 
                 rel="noreferrer"
                 className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-800 text-slate-300 hover:text-blue-400 group transition text-[11px]"
               >
                 <Folder className="w-4 h-4 text-amber-500 shrink-0" />
-                <span className="truncate flex-1 font-mono">{GOOGLE_DRIVE_FOLDER_ID}</span>
+                <span className="truncate flex-1 font-mono">{activeFolderId === 'root' ? 'My Drive Root' : activeFolderId}</span>
                 <span className="text-[9px] text-slate-500 uppercase font-bold tracking-wider group-hover:text-blue-400">Open Folder</span>
               </a>
             </div>
@@ -297,9 +313,9 @@ export default function DriveDatabaseSync() {
 
             <button
               onClick={handleExport}
-              disabled={!googleUser || isExporting}
+              disabled={!authToken || isExporting}
               className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer ${
-                googleUser 
+                authToken 
                   ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/10' 
                   : 'bg-slate-800 text-slate-500 border border-slate-850 cursor-not-allowed'
               }`}
@@ -316,7 +332,7 @@ export default function DriveDatabaseSync() {
                 </>
               )}
             </button>
-            {!googleUser && (
+            {!authToken && (
               <p className="text-[10px] text-center text-slate-500 font-medium">
                 * Requires connecting Google account first.
               </p>
@@ -368,7 +384,7 @@ export default function DriveDatabaseSync() {
               
               <button
                 onClick={fetchBackups}
-                disabled={!googleUser || isLoadingBackups}
+                disabled={!authToken || isLoadingBackups}
                 className="p-1.5 px-2.5 rounded-lg border border-slate-800 hover:bg-slate-800 text-xs font-semibold text-slate-300 flex items-center gap-1.5 transition disabled:opacity-50 disabled:hover:bg-transparent"
               >
                 <RefreshCw className={`w-3 h-3 ${isLoadingBackups ? 'animate-spin text-blue-400' : ''}`} />
@@ -376,14 +392,14 @@ export default function DriveDatabaseSync() {
               </button>
             </div>
 
-            {!googleUser ? (
+            {!authToken ? (
               <div className="text-center py-16 space-y-3">
                 <CloudLightning className="w-10 h-10 text-slate-700 mx-auto" />
                 <div className="space-y-1">
                   <p className="text-xs font-bold text-slate-400">Database Snaps Locked</p>
                   <p className="text-[11px] text-slate-500 max-w-sm mx-auto">
                     Please log into your Google Account to automatically download any active snapshot copies 
-                    found within directory '{GOOGLE_DRIVE_FOLDER_ID}'.
+                    found within directory '{activeFolderId === 'root' ? 'My Drive Root' : activeFolderId}'.
                   </p>
                 </div>
               </div>
@@ -397,8 +413,8 @@ export default function DriveDatabaseSync() {
                 <Folder className="w-10 h-10 text-slate-700 mx-auto" />
                 <div className="space-y-1">
                   <p className="text-xs font-bold text-slate-400">Target Folder is Empty</p>
-                  <p className="text-[11px] text-slate-500 max-w-xs mx-auto">
-                    No support logs database copies were found inside folder '{GOOGLE_DRIVE_FOLDER_ID}'. 
+                  <p className="text-[11px] text-slate-505 max-w-md mx-auto">
+                    No support logs database copies were found inside folder '{activeFolderId === 'root' ? 'My Drive Root' : activeFolderId}'. 
                     Click "Export Now" to initialize your first cloud database instance.
                   </p>
                 </div>
