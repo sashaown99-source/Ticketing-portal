@@ -26,7 +26,8 @@ interface AppContextType {
     username?: string,
     employeeId?: string,
     department?: string,
-    password?: string
+    password?: string,
+    isActive?: boolean
   ) => void;
   addTicket: (
     subject: string,
@@ -111,7 +112,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       employeeId,
       department,
       password,
-      avatarUrl: `https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150`
+      avatarUrl: `https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150`,
+      isActive: true
     };
     setUsers(prev => [...prev, newUser]);
     return newUser;
@@ -125,11 +127,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     username?: string,
     employeeId?: string,
     department?: string,
-    password?: string
+    password?: string,
+    isActive?: boolean
   ) => {
     setUsers(prev => prev.map(u => {
       if (u.id === id) {
-        const updated = {
+        const updated: User = {
           ...u,
           name,
           email,
@@ -137,7 +140,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           username,
           employeeId,
           department,
-          password
+          password,
+          isActive: isActive !== undefined ? isActive : (u.isActive !== false)
         };
         // sync currently logged in user if they updated themselves
         if (currentUser && currentUser.id === id) {

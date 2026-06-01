@@ -43,6 +43,16 @@ function AppContent() {
     }
   }, [currentUser]);
 
+  // Security check: Auto sign-out if current active profile is marked inactive
+  useEffect(() => {
+    if (currentUser) {
+      const activeDbRecord = users.find(u => u.id === currentUser.id);
+      if (activeDbRecord && activeDbRecord.isActive === false) {
+        setCurrentUser(null);
+      }
+    }
+  }, [users, currentUser, setCurrentUser]);
+
   if (!currentUser) {
     return <Login />;
   }
@@ -69,7 +79,7 @@ function AppContent() {
           <span className="text-slate-400 text-[10px]">Instantly swap profiles to test real role-based workflow behaviors.</span>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          {users.map(u => (
+          {users.filter(u => u.isActive !== false).map(u => (
             <button
               key={u.id}
               onClick={() => setCurrentUser(u)}
@@ -146,7 +156,7 @@ function AppContent() {
                 Performance Dashboard
               </button>
 
-              {['Admin access', 'Admin'].includes(currentUser.role) && (
+              {currentUser.role === 'Admin access' && (
                 <button
                   onClick={() => { setActiveTab('user_management'); setMobileMenuOpen(false); }}
                   className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition cursor-pointer ${
@@ -228,7 +238,7 @@ function AppContent() {
             <Dashboard onSelectTicket={navigateToTicket} />
           )}
 
-          {activeTab === 'user_management' && ['Admin access', 'Admin'].includes(currentUser.role) && (
+          {activeTab === 'user_management' && currentUser.role === 'Admin access' && (
             <UserManagement />
           )}
 

@@ -18,6 +18,7 @@ export interface User {
   department?: string;
   password?: string;
   avatarUrl?: string;
+  isActive?: boolean;
 }
 
 export type TicketCategory = 

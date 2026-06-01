@@ -17,6 +17,7 @@ export default function UserManagement() {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isActive, setIsActive] = useState(true);
   
   const [showPassword, setShowPassword] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
@@ -31,6 +32,7 @@ export default function UserManagement() {
     setEmail(userToEdit.email);
     setUsername(userToEdit.username || '');
     setPassword(userToEdit.password || '');
+    setIsActive(userToEdit.isActive !== false);
     setSuccessMsg('');
     setErrorMsg('');
   };
@@ -44,6 +46,7 @@ export default function UserManagement() {
     setEmail('');
     setUsername('');
     setPassword('');
+    setIsActive(true);
     setSuccessMsg('');
     setErrorMsg('');
   };
@@ -90,7 +93,8 @@ export default function UserManagement() {
         username.trim(),
         employeeId.trim(),
         department.trim(),
-        password.trim()
+        password.trim(),
+        isActive
       );
       setSuccessMsg(`Successfully updated user account details for ${name.trim()} (${role})!`);
       setEditingUser(null);
@@ -116,6 +120,7 @@ export default function UserManagement() {
     setEmail('');
     setUsername('');
     setPassword('');
+    setIsActive(true);
   };
 
   const ROLE_BADGE_STYLE: Record<Role, string> = {
@@ -318,6 +323,20 @@ export default function UserManagement() {
               <p className="text-[10px] text-slate-450 mt-1">This user will only see and work with tickets related to their specific department role access details.</p>
             </div>
 
+            {/* Account Status Option */}
+            <div>
+              <label className="block mb-1.5 font-bold text-slate-300">Account status</label>
+              <select
+                value={isActive ? 'active' : 'inactive'}
+                onChange={e => setIsActive(e.target.value === 'active')}
+                className="w-full px-3 py-2.5 bg-[#141f35] border border-slate-700/60 rounded-xl text-xs focus:outline-none focus:border-blue-500 focus:bg-[#1a2948] text-slate-100 font-semibold"
+              >
+                <option value="active">🟢 Active / Active</option>
+                <option value="inactive">🔴 Inactive / Inactive (Disabled)</option>
+              </select>
+              <p className="text-[10px] text-slate-450 mt-1">Inactive accounts will be immediately blocked from signing into the portal in sandbox logins.</p>
+            </div>
+
             {/* Submit Button */}
             <button
               type="submit"
@@ -396,11 +415,24 @@ export default function UserManagement() {
 
                       {/* Access / Role Badge */}
                       <td className="px-5 py-3 text-center">
-                        <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
+                        <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase mb-1 ${
                           ROLE_BADGE_STYLE[u.role] || 'bg-slate-500/10 text-slate-400 border border-slate-500/20'
                         }`}>
                           {u.role}
                         </span>
+                        <div className="flex justify-center mt-1">
+                          {u.isActive !== false ? (
+                            <span className="inline-flex items-center gap-1 text-[8px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 font-bold px-1.5 py-0.5 rounded uppercase leading-none">
+                              <span className="w-1 h-1 rounded-full bg-emerald-400" />
+                              Active
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[8px] text-rose-400 bg-rose-500/10 border border-rose-500/20 font-bold px-1.5 py-0.5 rounded uppercase leading-none">
+                              <span className="w-1 h-1 rounded-full bg-rose-400" />
+                              Inactive
+                            </span>
+                          )}
+                        </div>
                       </td>
 
                       {/* Edit actions button */}

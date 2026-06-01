@@ -26,8 +26,13 @@ export default function Login() {
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleQuickLogin = (userId: string) => {
+    setErrorMsg('');
     const user = users.find(u => u.id === userId);
     if (user) {
+      if (user.isActive === false) {
+        setErrorMsg('This simulation account has been set to Inactive. It cannot be used to sign in.');
+        return;
+      }
       setCurrentUser(user);
     }
   };
@@ -37,6 +42,10 @@ export default function Login() {
     setErrorMsg('');
     const user = users.find(u => u.email.toLowerCase() === customEmail.trim().toLowerCase());
     if (user) {
+      if (user.isActive === false) {
+        setErrorMsg('This simulation account has been deactivated by administration. Contact support.');
+        return;
+      }
       setCurrentUser(user);
     } else {
       setErrorMsg('User with this email not found. Try one of the quick login presets or register below.');
@@ -81,22 +90,34 @@ export default function Login() {
             <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase block mb-3">Quick Actions (Try any profile)</span>
             <div className="space-y-2 mb-4 max-h-[380px] overflow-y-auto pr-1">
               {users.map(u => {
+                const isUserActive = u.isActive !== false;
                 const details = ROLE_DETAILS[u.role] || { label: 'Personnel', badgeStyle: 'bg-slate-600/30 text-slate-300 border border-slate-705', icon: '👤' };
                 return (
                   <button
                     key={u.id}
                     onClick={() => handleQuickLogin(u.id)}
-                    className="w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 transition border border-slate-700/50 hover:border-blue-500/40 flex items-center gap-3 group"
+                    className={`w-full text-left p-3 rounded-xl transition border flex items-center gap-3 group ${
+                      isUserActive
+                        ? 'bg-slate-800 hover:bg-slate-700 border-slate-700/50 hover:border-blue-500/40'
+                        : 'bg-slate-900 border-slate-850 opacity-40 relative'
+                    }`}
                   >
                     <img src={u.avatarUrl} alt={u.name} className="w-8 h-8 rounded-full border border-slate-700" referrerPolicy="no-referrer" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-slate-200 truncate group-hover:text-white">{u.name}</p>
+                      <p className={`text-xs font-bold truncate group-hover:text-white ${isUserActive ? 'text-slate-200' : 'text-slate-500 line-through'}`}>{u.name}</p>
                       <p className="text-[10px] text-slate-400 truncate">{details.label}</p>
                     </div>
-                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase flex items-center gap-1 ${details.badgeStyle}`}>
-                      <span>{details.icon}</span>
-                      <span>{u.role}</span>
-                    </span>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase flex items-center gap-1 ${details.badgeStyle}`}>
+                        <span>{details.icon}</span>
+                        <span>{u.role}</span>
+                      </span>
+                      {!isUserActive && (
+                        <span className="text-[8px] bg-red-900/65 text-red-300 border border-red-500/30 font-bold px-1.5 py-0.5 rounded uppercase leading-none shadow-sm">
+                          Inactive
+                        </span>
+                      )}
+                    </div>
                   </button>
                 );
               })}
@@ -134,7 +155,7 @@ export default function Login() {
           {!isRegister ? (
             <form onSubmit={handleCustomLogin} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1.5" htmlFor="login_email">
+                <label className="block text-xs font-bold text-black mb-1.5" htmlFor="login_email">
                   Email Address
                 </label>
                 <div className="relative">
@@ -148,23 +169,23 @@ export default function Login() {
                     placeholder="e.g. sasha.c@company.internal"
                     value={customEmail}
                     onChange={e => setCustomEmail(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition"
+                    className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:bg-white text-slate-900 transition font-medium"
                   />
                 </div>
-                <p className="text-[10px] text-slate-400 mt-1">
-                  💡 Hint: Enter any user's email like <strong className="text-slate-500">employee@company.com</strong> or custom.
+                <p className="text-[10px] text-slate-500 mt-1">
+                  💡 Hint: Enter any user's email like <strong className="text-slate-700">employee@company.com</strong> or custom.
                 </p>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1.5" htmlFor="login_password">
+                <label className="block text-xs font-bold text-black mb-1.5" htmlFor="login_password">
                   Security Password
                 </label>
                 <input
                   id="login_password"
                   type="password"
                   placeholder="••••••••"
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition"
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:bg-white text-slate-900 transition font-medium"
                 />
               </div>
 
@@ -179,7 +200,7 @@ export default function Login() {
           ) : (
             <form onSubmit={handleRegister} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1.5" htmlFor="reg_name">
+                <label className="block text-xs font-bold text-black mb-1.5" htmlFor="reg_name">
                   Full Name
                 </label>
                 <input
@@ -189,12 +210,12 @@ export default function Login() {
                   placeholder="e.g. Oliver Twist"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition"
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:bg-white text-slate-900 transition font-medium"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1.5" htmlFor="reg_email">
+                <label className="block text-xs font-bold text-black mb-1.5" htmlFor="reg_email">
                   Email Address
                 </label>
                 <input
@@ -204,12 +225,12 @@ export default function Login() {
                   placeholder="oliver@company.internal"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition"
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:bg-white text-slate-900 transition font-medium"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                <label className="block text-xs font-bold text-black mb-1.5">
                   Select Sandbox Assigned Role
                 </label>
                 <select
