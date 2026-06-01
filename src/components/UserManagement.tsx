@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Role, User } from '../types';
-import { UserPlus, Users, Key, Mail, Shield, Building, Hash, Eye, EyeOff, Edit2, XCircle } from 'lucide-react';
+import { UserPlus, Users, Key, Mail, Shield, Building, Hash, Eye, EyeOff, Edit2, XCircle, User as UserIcon } from 'lucide-react';
 
 export default function UserManagement() {
   const { users, registerUser, updateUser } = useApp();
@@ -390,12 +390,9 @@ export default function UserManagement() {
                     >
                       {/* Avatar & Name & Email */}
                       <td className="px-5 py-3 flex items-center gap-2">
-                        <img 
-                          src={u.avatarUrl} 
-                          alt="" 
-                          className="w-8 h-8 rounded-full border border-slate-700" 
-                          referrerPolicy="no-referrer"
-                        />
+                        <div className="w-8 h-8 rounded-full border border-slate-700 bg-slate-800/85 flex items-center justify-center text-slate-400 shrink-0 select-none">
+                          <UserIcon className="w-4 h-4 text-slate-300" />
+                        </div>
                         <div className="min-w-0">
                           <p className="font-bold text-slate-200 line-clamp-1">{u.name}</p>
                           <p className="text-[10px] text-slate-450 line-clamp-1 font-mono">{u.email}</p>

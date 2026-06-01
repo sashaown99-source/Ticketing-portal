@@ -6,6 +6,7 @@ import UserPortal from './components/UserPortal';
 import CreateTicket from './components/CreateTicket';
 import TicketDetail from './components/TicketDetail';
 import UserManagement from './components/UserManagement';
+import UserList from './components/UserList';
 
 // Icons
 import { 
@@ -21,7 +22,8 @@ import {
   HelpCircle,
   Eye,
   RefreshCw,
-  Users
+  Users,
+  User
 } from 'lucide-react';
 
 function AppContent() {
@@ -71,47 +73,18 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-[#060a13] flex flex-col text-slate-100">
       
-      {/* Simulation Sandbox Quick Bar */}
-      <div className="bg-[#0e1628]/95 text-slate-350 py-2.5 px-4 text-xs border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 shadow-md backdrop-blur-md">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span className="font-semibold text-[11px] tracking-wide text-slate-200">SANDBOX SIMULATOR:</span>
-          <span className="text-slate-400 text-[10px]">Instantly swap profiles to test real role-based workflow behaviors.</span>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          {users.filter(u => u.isActive !== false).map(u => (
-            <button
-              key={u.id}
-              onClick={() => setCurrentUser(u)}
-              className={`px-2 py-1 rounded text-[10px] font-bold transition flex items-center gap-1.5 cursor-pointer max-w-[130px] md:max-w-none truncate ${
-                currentUser.id === u.id 
-                  ? 'bg-blue-600 text-white shadow-sm font-semibold' 
-                  : 'bg-[#18233c] text-slate-300 hover:bg-[#1f2d4d] border border-slate-700/60'
-              }`}
-            >
-              <img src={u.avatarUrl} alt="" className="w-3.5 h-3.5 rounded-full" referrerPolicy="no-referrer" />
-              <span className="truncate">
-                {u.role === 'Admin access' ? '👑' : u.role === 'Admin' ? '👤' : u.role === 'Supervisor' ? '⚡' : u.role === 'Manager' ? '💼' : u.role === 'IT' ? '💻' : u.role === 'HR' ? '🤝' : u.role === 'Finance' ? '🪙' : '📞'} {u.name.split(' ')[0]}
-              </span>
-            </button>
-          ))}
-          <button 
-            onClick={resetState}
-            className="p-1 text-slate-400 hover:text-white transition ml-2 border border-slate-705 hover:bg-[#1a263f] rounded"
-            title="Reset sandbox state"
-          >
-            <RefreshCw className="w-3 h-3" />
-          </button>
-        </div>
-      </div>
-
       {/* Main Structural Frame */}
       <div className="flex-1 flex flex-col md:flex-row relative">
           {/* Mobile Header Toggle */}
         <header className="md:hidden bg-[#0d1527] border-b border-slate-800 p-4 flex items-center justify-between z-20">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white">
-              <ShieldAlert className="w-4 h-4" />
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-700 bg-white">
+              <img 
+                src="/src/assets/images/sheba_logo_1780297177657.png" 
+                alt="Sheba.xyz" 
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
             </div>
             <span className="font-bold text-sm tracking-wide text-slate-100">Sheba.xyz Ticketing Portal</span>
           </div>
@@ -132,8 +105,13 @@ function AppContent() {
             
             {/* Sidebar Brand Header */}
             <div className="hidden md:flex items-center gap-2.5 px-2">
-              <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/10">
-                <ShieldAlert className="w-4.5 h-4.5" />
+              <div className="w-9 h-9 rounded-xl overflow-hidden border border-slate-700 bg-white shadow-md shadow-blue-500/5 select-none">
+                <img 
+                  src="/src/assets/images/sheba_logo_1780297177657.png" 
+                  alt="Sheba.xyz" 
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
               </div>
               <div>
                 <span className="font-extrabold text-sm tracking-wider text-slate-100 uppercase block leading-none">Sheba.xyz</span>
@@ -183,6 +161,18 @@ function AppContent() {
               </button>
 
               <button
+                onClick={() => { setActiveTab('user_list'); setMobileMenuOpen(false); }}
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition cursor-pointer ${
+                  activeTab === 'user_list'
+                    ? 'bg-blue-600/15 text-blue-400 font-bold border border-blue-500/20 bg-blue-500/5' 
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+                }`}
+              >
+                <Users className="w-4 h-4 shrink-0 text-slate-400" />
+                User List
+              </button>
+
+              <button
                 onClick={() => { setActiveTab('create_ticket'); setMobileMenuOpen(false); }}
                 className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition cursor-pointer ${
                   activeTab === 'create_ticket'
@@ -200,12 +190,9 @@ function AppContent() {
           {/* User footer info block */}
           <div className="pt-4 border-t border-slate-850 space-y-3">
             <div className="flex items-center gap-2.5 px-1">
-              <img 
-                src={currentUser.avatarUrl} 
-                alt={currentUser.name} 
-                className="w-8.5 h-8.5 rounded-full border border-slate-800" 
-                referrerPolicy="no-referrer"
-              />
+              <div className="w-8.5 h-8.5 rounded-full border border-slate-800 bg-slate-800/85 flex items-center justify-center text-slate-400 shrink-0 select-none">
+                <User className="w-4.5 h-4.5 text-slate-300" />
+              </div>
               <div className="min-w-0">
                 <p className="text-xs font-bold text-slate-100 truncate">{currentUser.name}</p>
                 <p className="text-[10px] text-slate-450 truncate">{currentUser.email}</p>
@@ -240,6 +227,10 @@ function AppContent() {
 
           {activeTab === 'user_management' && currentUser.role === 'Admin access' && (
             <UserManagement />
+          )}
+
+          {activeTab === 'user_list' && (
+            <UserList />
           )}
 
           {activeTab === 'my_tickets' && (
