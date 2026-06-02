@@ -66,10 +66,22 @@ export default function DriveDatabaseSync() {
       setStatusMessage({ text: 'Connected to your Google Account successfully.', type: 'success' });
     } catch (err: any) {
       console.error(err);
-      setStatusMessage({ 
-        text: `Authentication failed: ${err.message || 'Please check popup blocker permissions.'}`, 
-        type: 'error' 
-      });
+      const isPopupError = err.code?.includes('popup-closed-by-user') || 
+                           err.message?.includes('popup-closed-by-user') || 
+                           err.message?.includes('cancelled') ||
+                           err.message?.includes('popup');
+      
+      if (isPopupError) {
+        setStatusMessage({ 
+          text: 'Google Sign-In failed because the authorization popup was blocked or closed. Since the app runs inside an iframe (AI Studio preview window), browsers heavily restrict popups. To resolve this, click the "Open in New Tab" arrow button at the top-right of your preview screen to run the app in a standalone tab, and ensure your browser allows popup windows.', 
+          type: 'error' 
+        });
+      } else {
+        setStatusMessage({ 
+          text: `Authentication failed: ${err.message || 'Please check popup blocker permissions.'}`, 
+          type: 'error' 
+        });
+      }
     }
   };
 
