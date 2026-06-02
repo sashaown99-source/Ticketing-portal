@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Default user-provided credentials
-const DEFAULT_PROJECT_ID = 'savzqksbvknxrcxctfto';
-const DEFAULT_ANON_KEY = 'sb_publishable_oRrGv5TW-0LU6xE5N2aHiA_jSO-hMea';
+const DEFAULT_PROJECT_ID = (import.meta as any).env?.VITE_SUPABASE_PROJECT_ID || 'savzqksbvknxrcxctfto';
+const DEFAULT_ANON_KEY = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || 'sb_publishable_oRrGv5TW-0LU6xE5N2aHiA_jSO-hMea';
 
 // Retrieve credentials from localStorage or use the default
 export const getSupabaseConfig = () => {
