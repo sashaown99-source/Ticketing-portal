@@ -29,6 +29,7 @@ interface AppContextType {
     password?: string,
     isActive?: boolean
   ) => void;
+  deleteUser: (id: string) => void;
   addTicket: (
     subject: string,
     description: string,
@@ -164,6 +165,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       return u;
     }));
+  };
+
+  const deleteUser = (id: string) => {
+    setUsers(prev => prev.filter(u => u.id !== id));
   };
 
   const addTicket = (
@@ -349,6 +354,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setCurrentUser,
       registerUser,
       updateUser,
+      deleteUser,
       addTicket,
       addComment,
       updateTicketStatus,

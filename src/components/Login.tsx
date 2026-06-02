@@ -69,8 +69,8 @@ export default function Login() {
           
           {/* Email / Username field */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-800" htmlFor="login_email">
-              Corporate Email Address or Username
+            <label className="block text-xs font-bold text-slate-700" htmlFor="login_email">
+              Email or Username
             </label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
@@ -80,7 +80,7 @@ export default function Login() {
                 id="login_email"
                 type="text"
                 required
-                placeholder="e.g. employee@company.com or employee99"
+                placeholder="Enter email or username"
                 value={emailInput}
                 onChange={e => setEmailInput(e.target.value)}
                 className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:bg-white text-slate-900 transition font-medium"
@@ -90,8 +90,8 @@ export default function Login() {
 
           {/* Password field */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-800" htmlFor="login_password">
-              Security Password
+            <label className="block text-xs font-bold text-slate-700" htmlFor="login_password">
+              Password
             </label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
@@ -112,34 +112,12 @@ export default function Login() {
           {/* Action button */}
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-2.5 rounded-xl text-sm transition shadow-md shadow-blue-500/10 flex items-center justify-center gap-2 cursor-pointer pt-3 pb-3"
+            className="w-full bg-[#c2185b] hover:bg-[#ad144e] active:bg-[#880e4f] text-white font-bold py-2.5 rounded-xl text-sm transition shadow-md shadow-pink-500/10 flex items-center justify-center gap-2 cursor-pointer pt-3 pb-3"
           >
             <LogIn className="w-4 h-4" />
-            Sign In Securely
+            Sign In
           </button>
         </form>
-
-        {/* Professional Authorized Credentials Tip */}
-        <div className="pt-4 border-t border-slate-100 space-y-2.5">
-          <div className="flex items-center gap-1.5">
-            <span className="flex h-2 w-2 rounded-full bg-blue-500" />
-            <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
-              Authorized Portal Instructions
-            </span>
-          </div>
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[11px] text-slate-650 space-y-1.5 leading-relaxed">
-            <p>
-              To create new user accounts, sign in first as the default Portal Administrator:
-            </p>
-            <div className="bg-white border border-slate-200 rounded-lg p-2 font-mono text-[10px] space-y-1 text-slate-800">
-              <div>Email: <span className="font-bold text-blue-600">sashaown99@gmail.com</span></div>
-              <div>Password: <span className="font-bold text-blue-600">password</span></div>
-            </div>
-            <p className="text-[10px] text-slate-500">
-              Once inside, navigate to <strong>&quot;Create a New User&quot;</strong> to dynamically add staff/agents, who can then log in independently with their respective usernames or emails to manage or submit tickets.
-            </p>
-          </div>
-        </div>
 
 
 

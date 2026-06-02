@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Role, User } from '../types';
-import { UserPlus, Users, Key, Mail, Shield, Building, Hash, Eye, EyeOff, Edit2, XCircle, User as UserIcon } from 'lucide-react';
+import { UserPlus, Users, Key, Mail, Shield, Building, Hash, Eye, EyeOff, Edit2, XCircle, Trash2, User as UserIcon } from 'lucide-react';
 
 export default function UserManagement() {
-  const { users, registerUser, updateUser } = useApp();
+  const { users, registerUser, updateUser, deleteUser, currentUser } = useApp();
   
   // State for tracking the user being edited administratively
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -22,6 +22,7 @@ export default function UserManagement() {
   const [showPassword, setShowPassword] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
   const handleStartEdit = (userToEdit: User) => {
     setEditingUser(userToEdit);
@@ -434,17 +435,31 @@ export default function UserManagement() {
 
                       {/* Edit actions button */}
                       <td className="px-5 py-3 text-right">
-                        <button
-                          onClick={() => handleStartEdit(u)}
-                          className={`p-1 px-3.5 rounded text-[10px] font-bold transition inline-flex items-center gap-1.5 cursor-pointer border ${
-                            editingUser?.id === u.id
-                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/30 shadow-sm'
-                              : 'bg-blue-600/15 hover:bg-blue-600/25 text-blue-400 border-blue-500/25'
-                          }`}
-                        >
-                          <Edit2 className="w-3 h-3" />
-                          Edit
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleStartEdit(u)}
+                            className={`p-1 px-2.5 rounded text-[10px] font-bold transition inline-flex items-center gap-1 cursor-pointer border ${
+                              editingUser?.id === u.id
+                                ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                                : 'bg-blue-600/15 hover:bg-blue-600/25 text-blue-400 border-blue-500/25'
+                            }`}
+                          >
+                            <Edit2 className="w-3 h-3" />
+                            Edit
+                          </button>
+
+                          {/* Deletion safety logic: do not delete the master account or yourself */}
+                          {u.email !== 'sashaown99@gmail.com' && currentUser?.id !== u.id && (
+                            <button
+                              type="button"
+                              onClick={() => setUserToDelete(u)}
+                              className="p-1 px-2.5 rounded text-[10px] font-bold bg-red-600/15 hover:bg-red-600/25 text-red-400 border border-red-500/25 transition inline-flex items-center gap-1 cursor-pointer"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                              Delete
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -459,6 +474,73 @@ export default function UserManagement() {
         </div>
 
       </div>
+
+      {/* Custom Confirmation Modal */}
+      {userToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+          <div className="bg-[#0b1329] border border-slate-800 rounded-2xl max-w-md w-full shadow-2xl p-6 text-slate-200">
+            <div className="flex items-center gap-3 text-red-400 mb-4">
+              <div className="p-2 bg-red-500/15 rounded-xl border border-red-500/10">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="font-extrabold text-base">Delete User Account?</h4>
+                <p className="text-slate-400 text-xs mt-0.5">This action cannot be undone.</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-xl mb-6">
+              <table className="w-full text-xs">
+                <tbody>
+                  <tr>
+                    <td className="text-slate-400 font-bold py-1">Name:</td>
+                    <td className="text-slate-200 font-bold text-right py-1">{userToDelete.name}</td>
+                  </tr>
+                  <tr>
+                    <td className="text-slate-400 font-bold py-1">Email:</td>
+                    <td className="text-slate-200 py-1 text-right font-mono text-[11px]">{userToDelete.email}</td>
+                  </tr>
+                  <tr>
+                    <td className="text-slate-400 font-bold py-1">Username:</td>
+                    <td className="text-slate-200 py-1 text-right font-mono text-[11px]">{userToDelete.username || userToDelete.email.split('@')[0]}</td>
+                  </tr>
+                  <tr>
+                    <td className="text-slate-400 font-bold py-1">Role:</td>
+                    <td className="text-right py-1">
+                      <span className="inline-block bg-slate-800 text-slate-300 text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-slate-700">
+                        {userToDelete.role}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 font-bold text-xs">
+              <button
+                type="button"
+                onClick={() => setUserToDelete(null)}
+                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700/60 text-slate-300 border border-slate-700 transition cursor-pointer"
+              >
+                No, Keep Account
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteUser(userToDelete.id);
+                  if (editingUser?.id === userToDelete.id) {
+                    handleCancelEdit();
+                  }
+                  setUserToDelete(null);
+                }}
+                className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white transition cursor-pointer"
+              >
+                Yes, Delete User
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
