@@ -454,7 +454,7 @@ export default function UserManagement() {
           </div>
 
           <div className="p-4 bg-[#121c33]/40 border-t border-slate-800/80 text-[10px] text-slate-400 font-bold leading-relaxed">
-            💡 Quick Tip: Newly created or updated users immediately populate in the top "SANDBOX SIMULATOR" profiles bar above, allowing you to instantly switch login active identities to test custom ticket creations and workflows.
+            💡 Quick Tip: Newly created users immediately exist in the database. To test their ticket flows or check their dashboard access, simply click "Sign Out Account" on the sidebar and sign back in using their customized email address or username and password.
           </div>
         </div>
 

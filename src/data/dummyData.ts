@@ -9,6 +9,7 @@ export const DUMMY_USERS: User[] = [
     username: 'sashaown',
     employeeId: 'EMP-001',
     department: 'Corporate Admin',
+    password: 'password',
     avatarUrl: undefined
   }
 ];

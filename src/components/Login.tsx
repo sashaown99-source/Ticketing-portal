@@ -119,44 +119,27 @@ export default function Login() {
           </button>
         </form>
 
-        {/* Sandbox Quick-Login Switcher */}
-        {users.length > 0 && (
-          <div className="pt-4 border-t border-slate-100 space-y-3.5">
-            <div className="flex items-center gap-2">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
-                Sandbox Simulator &mdash; Quick Sign-In
-              </span>
-            </div>
-            <div className="grid grid-cols-1 gap-2 max-h-44 overflow-y-auto pr-1">
-              {users.map(u => (
-                <button
-                  key={u.id}
-                  type="button"
-                  onClick={() => setCurrentUser(u)}
-                  className="w-full text-left bg-slate-50 hover:bg-blue-50/40 active:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-xl p-2.5 flex items-center justify-between transition cursor-pointer group"
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-7 h-7 rounded-lg bg-blue-600/10 text-blue-600 flex items-center justify-center text-xs font-bold border border-blue-500/10 uppercase shrink-0">
-                      {u.name.substring(0, 2)}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-slate-800 truncate leading-tight group-hover:text-blue-700 transition">
-                        {u.name}
-                      </p>
-                      <p className="text-[9px] text-slate-500 truncate mt-0.5 leading-none">
-                        User: <span className="font-mono font-semibold">{u.username || u.email.split('@')[0]}</span>
-                      </p>
-                    </div>
-                  </div>
-                  <span className="bg-white px-2 py-0.5 rounded text-[8px] font-bold text-slate-600 uppercase border border-slate-200 group-hover:bg-blue-100 group-hover:text-blue-700 group-hover:border-blue-200 transition">
-                    {u.role}
-                  </span>
-                </button>
-              ))}
-            </div>
+        {/* Professional Authorized Credentials Tip */}
+        <div className="pt-4 border-t border-slate-100 space-y-2.5">
+          <div className="flex items-center gap-1.5">
+            <span className="flex h-2 w-2 rounded-full bg-blue-500" />
+            <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+              Authorized Portal Instructions
+            </span>
           </div>
-        )}
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[11px] text-slate-650 space-y-1.5 leading-relaxed">
+            <p>
+              To create new user accounts, sign in first as the default Portal Administrator:
+            </p>
+            <div className="bg-white border border-slate-200 rounded-lg p-2 font-mono text-[10px] space-y-1 text-slate-800">
+              <div>Email: <span className="font-bold text-blue-600">sashaown99@gmail.com</span></div>
+              <div>Password: <span className="font-bold text-blue-600">password</span></div>
+            </div>
+            <p className="text-[10px] text-slate-500">
+              Once inside, navigate to <strong>&quot;Create a New User&quot;</strong> to dynamically add staff/agents, who can then log in independently with their respective usernames or emails to manage or submit tickets.
+            </p>
+          </div>
+        </div>
 
 
 

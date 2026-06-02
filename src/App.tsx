@@ -75,49 +75,6 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-[#060a13] flex flex-col text-slate-100">
       
-      {/* Dynamic Sandbox Workflow Simulator Bar at the top of the interface */}
-      <div className="bg-[#0b0e17] border-b border-slate-800/80 px-4 py-2.5 flex items-center justify-between gap-4 text-xs">
-        <div className="flex items-center gap-2 shrink-0 select-none">
-          <span className="flex h-2.5 w-2.5 relative">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-          </span>
-          <span className="font-extrabold text-[10px] uppercase tracking-wider text-slate-300">Sandbox Simulator</span>
-        </div>
-        
-        {/* Horizontal scrollable row of users */}
-        <div className="flex items-center gap-2 overflow-x-auto py-0.5 max-w-[70%] no-scrollbar">
-          {users.map(u => {
-            const isActive = currentUser.id === u.id;
-            return (
-              <button
-                key={u.id}
-                onClick={() => setCurrentUser(u)}
-                className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0 border ${
-                  isActive 
-                    ? 'bg-blue-600/20 text-blue-400 border-blue-500/40 shadow-sm shadow-blue-500/5' 
-                    : 'bg-[#121824] hover:bg-slate-800 text-slate-400 border-slate-800/60'
-                }`}
-              >
-                <div className="w-4.5 h-4.5 rounded bg-blue-600/10 text-blue-400 border border-blue-500/10 flex items-center justify-center text-[9px] font-bold">
-                  {u.name.substring(0, 2).toUpperCase()}
-                </div>
-                <span>{u.name}</span>
-                <span className={`text-[8px] px-1.5 py-0.2 rounded font-extrabold uppercase ${
-                  isActive ? 'bg-blue-500/25 text-blue-300' : 'bg-slate-800 text-slate-500'
-                }`}>
-                  {u.role}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-        
-        <div className="text-[10px] text-slate-450 font-semibold font-mono hidden lg:block shrink-0">
-          Logged In: <span className="text-blue-400 font-bold">{currentUser.name}</span> ({currentUser.role})
-        </div>
-      </div>
-
       {/* Main Structural Frame */}
       <div className="flex-1 flex flex-col md:flex-row relative">
           {/* Mobile Header Toggle */}
