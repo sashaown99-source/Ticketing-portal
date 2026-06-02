@@ -41,6 +41,10 @@ export default function DriveDatabaseSync() {
   const [isRestoring, setIsRestoring] = useState(false);
   const [activeFolderId, setActiveFolderId] = useState<string>(GOOGLE_DRIVE_FOLDER_ID);
 
+  const [isDomainError, setIsDomainError] = useState(false);
+  const [copiedDev, setCopiedDev] = useState(false);
+  const [copiedPre, setCopiedPre] = useState(false);
+
   // Subscribe to Authentication state
   useEffect(() => {
     const unsubscribe = initAuth((user, token) => {
@@ -59,8 +63,30 @@ export default function DriveDatabaseSync() {
     }
   }, [authToken, googleUser]);
 
+  const handleLocalDownload = () => {
+    const localDatabaseBundle = {
+      users,
+      tickets,
+      comments,
+      auditLogs,
+      exportedAt: new Date().toISOString()
+    };
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(localDatabaseBundle, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `sheba_ticketing_db_local_${new Date().toISOString().slice(0,10)}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    setStatusMessage({ 
+      text: 'Instant Backup file downloaded successfully! Since Google Drive is not connected, you can keep this copy locally or share it.', 
+      type: 'success' 
+    });
+  };
+
   const handleSignIn = async () => {
     setStatusMessage({ text: '', type: null });
+    setIsDomainError(false);
     try {
       await googleSignIn();
       setStatusMessage({ text: 'Connected to your Google Account successfully.', type: 'success' });
@@ -71,7 +97,16 @@ export default function DriveDatabaseSync() {
                            err.message?.includes('cancelled') ||
                            err.message?.includes('popup');
       
-      if (isPopupError) {
+      const isDomainErr = err.code?.includes('unauthorized-domain') || 
+                          err.message?.includes('unauthorized-domain');
+
+      if (isDomainErr) {
+        setIsDomainError(true);
+        setStatusMessage({ 
+          text: 'Authentication failed because this workspace domain is not whitelisted in your Firebase project. Follow the step-by-step instructions displayed below to authorize this domain.', 
+          type: 'error' 
+        });
+      } else if (isPopupError) {
         setStatusMessage({ 
           text: 'Google Sign-In failed because the authorization popup was blocked or closed. Since the app runs inside an iframe (AI Studio preview window), browsers heavily restrict popups. To resolve this, click the "Open in New Tab" arrow button at the top-right of your preview screen to run the app in a standalone tab, and ensure your browser allows popup windows.', 
           type: 'error' 
@@ -345,9 +380,19 @@ export default function DriveDatabaseSync() {
               )}
             </button>
             {!authToken && (
-              <p className="text-[10px] text-center text-slate-500 font-medium">
-                * Requires connecting Google account first.
-              </p>
+              <div className="pt-2 border-t border-slate-850/50 space-y-2">
+                <p className="text-[10px] text-center text-slate-450 leading-normal font-medium">
+                  Google Account not connected yet. You can also download a direct backup copy instantly to your device:
+                </p>
+                <button
+                  type="button"
+                  onClick={handleLocalDownload}
+                  className="w-full py-2 bg-slate-900 hover:bg-slate-850 border border-slate-800 text-blue-400 hover:text-blue-300 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Download Backup Locally (JSON)
+                </button>
+              </div>
             )}
           </div>
 
@@ -379,6 +424,92 @@ export default function DriveDatabaseSync() {
               >
                 &times;
               </button>
+            </div>
+          )}
+
+          {/* Firebase Authorized Domains Troubleshooting Guide */}
+          {isDomainError && (
+            <div className="bg-[#181123] border border-rose-500/30 rounded-2xl p-6 space-y-4 shadow-xl">
+              <div className="flex items-center gap-3 text-rose-500">
+                <div className="p-2 bg-rose-500/10 rounded-xl border border-rose-500/10">
+                  <AlertTriangle className="w-5 h-5 text-rose-400" />
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-sm text-slate-100">Why am I seeing this Firebase auth/unauthorized-domain notification?</h4>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Firebase protects your Google sign-in by rejecting auth requests from unregistered web domains.</p>
+                </div>
+              </div>
+
+              <div className="text-xs text-slate-300 space-y-3 leading-relaxed border-t border-slate-800/60 pt-3">
+                <p>
+                  To allow this dynamic preview environment to connect with your Google Drive database, you must manually add your current application domains to your Firebase Project's authorized domains list.
+                </p>
+
+                <div className="bg-slate-950/80 p-4 border border-slate-800 rounded-xl space-y-3.5">
+                  <p className="font-bold text-blue-400 text-[11px] uppercase tracking-wider">How to authorize these domains in 3 steps:</p>
+                  
+                  <ol className="list-decimal list-inside space-y-2.5 text-slate-300 text-[11px]">
+                    <li>
+                      Go to your Firebase console Settings tab: 
+                      <a 
+                        href="https://console.firebase.google.com/project/authentic-cumulus-67k72/authentication/settings" 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-pink-400 hover:text-pink-300 font-bold underline ml-1.5"
+                      >
+                        Open Firebase Settings
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                      </a>
+                    </li>
+                    <li>
+                      In the submenu tabs, scroll down to the <strong className="text-slate-200">Authorized domains</strong> section.
+                    </li>
+                    <li>
+                      Click the <strong className="text-slate-200">Add domain</strong> button and insert each of these exact domains (copy below):
+                    </li>
+                  </ol>
+
+                  <div className="grid grid-cols-1 gap-2 pt-1 font-mono text-[10px]">
+                    <div className="flex items-center justify-between bg-[#0b1329] border border-slate-800 rounded-xl p-2.5">
+                      <span className="text-orange-400 truncate max-w-[70%] select-all">
+                        ais-dev-fwbkbogxj2a4dq4d74kwq3-250359755145.asia-southeast1.run.app
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText('ais-dev-fwbkbogxj2a4dq4d74kwq3-250359755145.asia-southeast1.run.app');
+                          setCopiedDev(true);
+                          setTimeout(() => setCopiedDev(false), 2000);
+                        }}
+                        className="p-1 px-2.5 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 rounded-lg text-[10px] font-bold text-slate-300 flex items-center gap-1 transition cursor-pointer shrink-0"
+                      >
+                        {copiedDev ? <span className="text-emerald-400 flex items-center gap-1"><Check className="w-3 h-3" /> Copied!</span> : 'Copy Dev Domain'}
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between bg-[#0b1329] border border-slate-800 rounded-xl p-2.5">
+                      <span className="text-orange-400 truncate max-w-[70%] select-all">
+                        ais-pre-fwbkbogxj2a4dq4d74kwq3-250359755145.asia-southeast1.run.app
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText('ais-pre-fwbkbogxj2a4dq4d74kwq3-250359755145.asia-southeast1.run.app');
+                          setCopiedPre(true);
+                          setTimeout(() => setCopiedPre(false), 2000);
+                        }}
+                        className="p-1 px-2.5 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 rounded-lg text-[10px] font-bold text-slate-300 flex items-center gap-1 transition cursor-pointer shrink-0"
+                      >
+                        {copiedPre ? <span className="text-emerald-400 flex items-center gap-1"><Check className="w-3 h-3" /> Copied!</span> : 'Copy Shared Domain'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-slate-400">
+                  ⚡ Once added, reload the page or click <strong className="text-blue-400">Connect Google Drive</strong> again. Google Sign-In will authorize successfully, granting you full backup and restore controls.
+                </p>
+              </div>
             </div>
           )}
 
