@@ -7,7 +7,7 @@ import CreateTicket from './components/CreateTicket';
 import TicketDetail from './components/TicketDetail';
 import UserManagement from './components/UserManagement';
 import UserList from './components/UserList';
-import DriveDatabaseSync from './components/DriveDatabaseSync';
+import SupabaseSync from './components/SupabaseSync';
 
 // Icons
 import { 
@@ -25,7 +25,8 @@ import {
   RefreshCw,
   Users,
   User,
-  Cloud
+  Cloud,
+  Database
 } from 'lucide-react';
 
 function AppContent() {
@@ -187,16 +188,18 @@ function AppContent() {
               </button>
 
               <button
-                onClick={() => { setActiveTab('drive_sync'); setMobileMenuOpen(false); }}
+                onClick={() => { setActiveTab('supabase_sync'); setMobileMenuOpen(false); }}
                 className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition cursor-pointer ${
-                  activeTab === 'drive_sync'
+                  activeTab === 'supabase_sync'
                     ? 'bg-blue-600/15 text-blue-400 font-bold border border-blue-500/20 bg-blue-500/5' 
                     : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
                 }`}
               >
-                <Cloud className="w-4 h-4 shrink-0 text-slate-400" />
-                Google Drive Database
+                <Database className="w-4 h-4 shrink-0 text-slate-450" />
+                Supabase Database
               </button>
+
+
 
             </nav>
           </div>
@@ -258,9 +261,11 @@ function AppContent() {
             <CreateTicket onSuccess={handleCreateSuccess} />
           )}
 
-          {activeTab === 'drive_sync' && (
-            <DriveDatabaseSync />
+          {activeTab === 'supabase_sync' && (
+            <SupabaseSync />
           )}
+
+
 
           {activeTab === 'ticket_detail' && selectedTicketId && (
             <TicketDetail 
