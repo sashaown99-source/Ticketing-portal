@@ -46,6 +46,7 @@ interface AppContextType {
   assignTicket: (ticketId: string, assignedToName: string) => void;
   resetState: () => void;
   importDatabaseState: (data: { users: User[]; tickets: Ticket[]; comments: Comment[]; auditLogs: AuditLog[] }) => void;
+  addUserToLocalState: (user: User) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -413,6 +414,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const addUserToLocalState = (newUser: User) => {
+    setUsers(prev => {
+      const match = prev.find(u => u.id === newUser.id || u.email.toLowerCase() === newUser.email.toLowerCase());
+      if (match) {
+        return prev.map(u => (u.id === newUser.id || u.email.toLowerCase() === newUser.email.toLowerCase()) ? newUser : u);
+      }
+      return [...prev, newUser];
+    });
+  };
+
   // Filter tickets by user's role access to ensure they only see what is relevant:
   // "jake jei role er access dawha hobe tara sudu er related ticket nia kaj korte parbe"
   const visibleTickets = React.useMemo(() => {
@@ -449,7 +460,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       updateTicketStatus,
       assignTicket,
       resetState,
-      importDatabaseState
+      importDatabaseState,
+      addUserToLocalState
     }}>
       {children}
     </AppContext.Provider>
