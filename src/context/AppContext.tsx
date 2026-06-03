@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Ticket, Comment, AuditLog, TicketCategory, TicketPriority, TicketStatus, Role } from '../types';
 import { DUMMY_USERS, DUMMY_TICKETS, DUMMY_COMMENTS, DUMMY_AUDIT_LOGS } from '../data/dummyData';
+import { supabase } from '../lib/supabaseClient';
 
 interface AppContextType {
   currentUser: User | null;
@@ -88,6 +89,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : DUMMY_AUDIT_LOGS;
   });
 
+  // Attempt to fetch from Supabase on mount
+  useEffect(() => {
+    async function loadRealtimeSupabaseData() {
+      try {
+        const { data: dbUsers, error: uErr } = await supabase.from('sheba_users').select('*');
+        if (uErr) throw uErr;
+
+        const { data: dbTickets, error: tErr } = await supabase.from('sheba_tickets').select('*');
+        if (tErr) throw tErr;
+
+        const { data: dbComments, error: cErr } = await supabase.from('sheba_comments').select('*');
+        if (cErr) throw cErr;
+
+        const { data: dbAudit, error: aErr } = await supabase.from('sheba_audit_logs').select('*');
+        if (aErr) throw aErr;
+
+        // If load from Supabase works successfully
+        if (dbUsers && dbUsers.length > 0) setUsers(dbUsers);
+        if (dbTickets) setTickets(dbTickets);
+        if (dbComments) setComments(dbComments);
+        if (dbAudit) setAuditLogs(dbAudit);
+        
+        console.log('Successfully synchronized state with Supabase PostgreSQL tables.');
+      } catch (err: any) {
+        console.warn('Realtime Supabase initialization skipped or failed (tables might not be established yet):', err.message);
+      }
+    }
+    loadRealtimeSupabaseData();
+  }, []);
+
   useEffect(() => {
     localStorage.setItem('it_current_user', currentUser ? JSON.stringify(currentUser) : '');
   }, [currentUser]);
@@ -129,7 +160,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       avatarUrl: `https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150`,
       isActive: true
     };
+    
     setUsers(prev => [...prev, newUser]);
+
+    // Send to Supabase
+    supabase.from('sheba_users').insert(newUser).then(({ error }) => {
+      if (error) console.error('Supabase error during registerUser:', error);
+    });
+
     return newUser;
   };
 
@@ -161,6 +199,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (currentUser && currentUser.id === id) {
           setCurrentUser(updated);
         }
+
+        // Send to Supabase
+        supabase.from('sheba_users').update(updated).eq('id', id).then(({ error }) => {
+          if (error) console.error('Supabase error during updateUser:', error);
+        });
+
         return updated;
       }
       return u;
@@ -169,6 +213,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const deleteUser = (id: string) => {
     setUsers(prev => prev.filter(u => u.id !== id));
+
+    // Send to Supabase
+    supabase.from('sheba_users').delete().eq('id', id).then(({ error }) => {
+      if (error) console.error('Supabase error during deleteUser:', error);
+    });
   };
 
   const addTicket = (
@@ -211,10 +260,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createdAt: new Date().toISOString()
     };
     setAuditLogs(prev => [newLog, ...prev]);
+
+    // Send to Supabase
+    supabase.from('sheba_tickets').insert(newTicket).then(({ error }) => {
+      if (error) console.error('Supabase error during addTicket (ticket):', error);
+    });
+    supabase.from('sheba_audit_logs').insert(newLog).then(({ error }) => {
+      if (error) console.error('Supabase error during addTicket (audit):', error);
+    });
   };
 
   const addComment = (ticketId: string, commentText: string, isInternal: boolean) => {
     if (!currentUser) return;
+    const currentTimestamp = new Date().toISOString();
     const newComment: Comment = {
       id: `COM-${Date.now()}`,
       ticketId,
@@ -223,13 +281,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       userRole: currentUser.role,
       commentText,
       isInternal,
-      createdAt: new Date().toISOString()
+      createdAt: currentTimestamp
     };
 
     setComments(prev => [...prev, newComment]);
 
     // Update ticket's updatedAt timestamp
-    setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, updatedAt: new Date().toISOString() } : t));
+    setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, updatedAt: currentTimestamp } : t));
 
     // Audit log
     const newLog: AuditLog = {
@@ -237,19 +295,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ticketId,
       action: isInternal ? 'Added Internal Comment' : 'Added Public Comment',
       performedBy: currentUser.name,
-      createdAt: new Date().toISOString()
+      createdAt: currentTimestamp
     };
     setAuditLogs(prev => [newLog, ...prev]);
+
+    // Send to Supabase
+    supabase.from('sheba_comments').insert(newComment).then(({ error }) => {
+      if (error) console.error('Supabase error during addComment (comment):', error);
+    });
+    supabase.from('sheba_tickets').update({ updatedAt: currentTimestamp }).eq('id', ticketId).then(({ error }) => {
+      if (error) console.error('Supabase error during addComment (ticket update):', error);
+    });
+    supabase.from('sheba_audit_logs').insert(newLog).then(({ error }) => {
+      if (error) console.error('Supabase error during addComment (audit):', error);
+    });
   };
 
   const updateTicketStatus = (ticketId: string, newStatus: TicketStatus) => {
     if (!currentUser) return;
+    const currentTimestamp = new Date().toISOString();
+    
     setTickets(prev => prev.map(t => {
       if (t.id === ticketId) {
         return {
           ...t,
           status: newStatus,
-          updatedAt: new Date().toISOString()
+          updatedAt: currentTimestamp
         };
       }
       return t;
@@ -261,19 +332,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ticketId,
       action: `Status changed to ${newStatus}`,
       performedBy: currentUser.name,
-      createdAt: new Date().toISOString()
+      createdAt: currentTimestamp
     };
     setAuditLogs(prev => [newLog, ...prev]);
+
+    // Send to Supabase
+    supabase.from('sheba_tickets').update({ status: newStatus, updatedAt: currentTimestamp }).eq('id', ticketId).then(({ error }) => {
+      if (error) console.error('Supabase error during updateTicketStatus (ticket):', error);
+    });
+    supabase.from('sheba_audit_logs').insert(newLog).then(({ error }) => {
+      if (error) console.error('Supabase error during updateTicketStatus (audit):', error);
+    });
   };
 
   const assignTicket = (ticketId: string, assignedToName: string) => {
     if (!currentUser) return;
+    const currentTimestamp = new Date().toISOString();
+
     setTickets(prev => prev.map(t => {
       if (t.id === ticketId) {
         return {
           ...t,
           assignedTo: assignedToName,
-          updatedAt: new Date().toISOString()
+          updatedAt: currentTimestamp
         };
       }
       return t;
@@ -285,9 +366,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ticketId,
       action: `Assigned to ${assignedToName}`,
       performedBy: currentUser.name,
-      createdAt: new Date().toISOString()
+      createdAt: currentTimestamp
     };
     setAuditLogs(prev => [newLog, ...prev]);
+
+    // Send to Supabase
+    supabase.from('sheba_tickets').update({ assignedTo: assignedToName, updatedAt: currentTimestamp }).eq('id', ticketId).then(({ error }) => {
+      if (error) console.error('Supabase error during assignTicket (ticket):', error);
+    });
+    supabase.from('sheba_audit_logs').insert(newLog).then(({ error }) => {
+      if (error) console.error('Supabase error during assignTicket (audit):', error);
+    });
   };
 
   const resetState = () => {
