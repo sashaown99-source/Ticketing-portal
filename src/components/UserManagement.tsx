@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Role, User } from '../types';
@@ -54,17 +52,13 @@ export default function UserManagement() {
     setErrorMsg('');
   };
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSuccessMsg('');
     setErrorMsg('');
-    setIsSubmitting(true);
 
     if (!name.trim() || !email.trim() || !username.trim() || !password.trim() || !employeeId.trim() || !department.trim()) {
       setErrorMsg('Please fill in all the required fields correctly.');
-      setIsSubmitting(false);
       return;
     }
 
@@ -79,64 +73,55 @@ export default function UserManagement() {
 
     if (emailExists) {
       setErrorMsg('A user with this Email address is already registered.');
-      setIsSubmitting(false);
       return;
     }
     if (usernameExists) {
       setErrorMsg('A user with this Username is already registered.');
-      setIsSubmitting(false);
       return;
     }
     if (empIdExists) {
       setErrorMsg('A user with this Employee ID is already registered.');
-      setIsSubmitting(false);
       return;
     }
 
-    try {
-      if (editingUser) {
-        // Perform administrative update
-        await updateUser(
-          editingUser.id,
-          name.trim(),
-          email.trim(),
-          role,
-          username.trim(),
-          employeeId.trim(),
-          department.trim(),
-          password.trim(),
-          isActive
-        );
-        setSuccessMsg(`Successfully updated user account details for ${name.trim()} (${role})!`);
-        setEditingUser(null);
-      } else {
-        // Register new user with choices
-        await registerUser(
-          name.trim(),
-          email.trim(),
-          role,
-          username.trim(),
-          employeeId.trim(),
-          department.trim(),
-          password.trim()
-        );
-        setSuccessMsg(`Successfully created new user account for ${name.trim()} (${role})!`);
-      }
-      
-      // Clear inputs after successful submission/update
-      setName('');
-      setEmployeeId('');
-      setDepartment('');
-      setRole('agent');
-      setEmail('');
-      setUsername('');
-      setPassword('');
-      setIsActive(true);
-    } catch (err: any) {
-      setErrorMsg(err.message || 'An error occurred while managing the user account.');
-    } finally {
-      setIsSubmitting(false);
+    if (editingUser) {
+      // Perform administrative update
+      updateUser(
+        editingUser.id,
+        name.trim(),
+        email.trim(),
+        role,
+        username.trim(),
+        employeeId.trim(),
+        department.trim(),
+        password.trim(),
+        isActive
+      );
+      setSuccessMsg(`Successfully updated user account details for ${name.trim()} (${role})!`);
+      setEditingUser(null);
+    } else {
+      // Register new user with choices
+      registerUser(
+        name.trim(),
+        email.trim(),
+        role,
+        username.trim(),
+        employeeId.trim(),
+        department.trim(),
+        password.trim()
+      );
+      setSuccessMsg(`Successfully created new user account for ${name.trim()} (${role})!`);
     }
+    
+    // Clear inputs after successful submission/update
+    setName('');
+    setEmployeeId('');
+    setDepartment('');
+    setRole('agent');
+    setEmail('');
+    setUsername('');
+    setPassword('');
+    setIsActive(true);
   };
 
   const ROLE_BADGE_STYLE: Record<Role, string> = {
@@ -356,23 +341,14 @@ export default function UserManagement() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isSubmitting}
               className={`w-full font-bold py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer mt-4 ${
-                isSubmitting ? 'opacity-55 cursor-not-allowed' : ''
-              } ${
                 editingUser 
-                  ? 'bg-amber-650 hover:bg-amber-700 text-white shadow-amber-500/10' 
-                  : 'bg-blue-650 hover:bg-blue-700 active:bg-blue-800 text-white shadow-blue-500/10'
+                  ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-amber-500/10' 
+                  : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-blue-500/10'
               }`}
             >
-              {isSubmitting ? (
-                <span>Processing...</span>
-              ) : (
-                <>
-                  {editingUser ? <Edit2 className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
-                  {editingUser ? 'Save Updates' : 'Register Sheba User'}
-                </>
-              )}
+              {editingUser ? <Edit2 className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+              {editingUser ? 'Save Updates' : 'Register Sheba User'}
             </button>
 
             {editingUser && (
@@ -550,17 +526,12 @@ export default function UserManagement() {
               </button>
               <button
                 type="button"
-                onClick={async () => {
-                  try {
-                    await deleteUser(userToDelete.id);
-                    if (editingUser?.id === userToDelete.id) {
-                      handleCancelEdit();
-                    }
-                    setUserToDelete(null);
-                  } catch (err: any) {
-                    setErrorMsg(err.message || 'Failed to delete user.');
-                    setUserToDelete(null);
+                onClick={() => {
+                  deleteUser(userToDelete.id);
+                  if (editingUser?.id === userToDelete.id) {
+                    handleCancelEdit();
                   }
+                  setUserToDelete(null);
                 }}
                 className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white transition cursor-pointer"
               >
