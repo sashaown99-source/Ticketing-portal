@@ -1,10 +1,12 @@
+"use client";
+
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabaseClient';
 import { Shield, Key, Mail, LogIn } from 'lucide-react';
 
 export default function Login() {
-  const { users, setCurrentUser, addUserToLocalState } = useApp();
+  const { setCurrentUser, addUserToLocalState } = useApp();
   const [emailInput, setEmailInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -18,70 +20,101 @@ export default function Login() {
     const trimmedInput = emailInput.trim().toLowerCase();
 
     try {
-      // 1. Try to fetch user directly from Supabase first
-      const { data: dbUsers, error: supabaseError } = await supabase
-        .from('sheba_users')
-        .select('*');
-      
-      let fetchedUser: any = null;
-      if (!supabaseError && dbUsers && dbUsers.length > 0) {
-        // Find matching email or username
-        fetchedUser = dbUsers.find((u: any) => 
-          (u.email && u.email.toLowerCase() === trimmedInput) ||
-          (u.username && u.username.toLowerCase() === trimmedInput)
-        );
+      // 1. Resolve email if input is a username
+      let targetEmail = trimmedInput;
+      if (!trimmedInput.includes('@')) {
+        // Query sheba_users table by username to get email
+        const { data: userProfile, error: profileErr } = await supabase
+          .from('sheba_users')
+          .select('email, isActive')
+          .eq('username', trimmedInput)
+          .maybeSingle();
+
+        if (profileErr) {
+          setErrorMsg('Error checking user directory.');
+          setIsSubmitting(false);
+          return;
+        }
+
+        if (!userProfile) {
+          setErrorMsg('No account found with this username.');
+          setIsSubmitting(false);
+          return;
+        }
+
+        if (userProfile.isActive === false) {
+          setErrorMsg('This account has been deactivated by administration.');
+          setIsSubmitting(false);
+          return;
+        }
+
+        targetEmail = userProfile.email;
+      } else {
+        // Double check isActive for email input
+        const { data: userProfile, error: profileErr } = await supabase
+          .from('sheba_users')
+          .select('isActive')
+          .eq('email', trimmedInput)
+          .maybeSingle();
+
+        if (!profileErr && userProfile && userProfile.isActive === false) {
+          setErrorMsg('This account has been deactivated by administration.');
+          setIsSubmitting(false);
+          return;
+        }
       }
 
-      // If found in Supabase database
-      if (fetchedUser) {
-        if (fetchedUser.isActive === false) {
-          setErrorMsg('This account has been deactivated by administration. Contact support.');
-          setIsSubmitting(false);
-          return;
-        }
+      // 2. Perform Supabase authentication
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: targetEmail,
+        password: passwordInput,
+      });
 
-        const requiredPassword = fetchedUser.password || 'password';
-        if (passwordInput !== requiredPassword) {
-          setErrorMsg('Invalid password. (Hint: default accounts use "password")');
-          setIsSubmitting(false);
-          return;
-        }
+      if (authError) {
+        setErrorMsg(authError.message === 'Invalid login credentials' 
+          ? 'Invalid email/username or password.' 
+          : authError.message
+        );
+        setIsSubmitting(false);
+        return;
+      }
 
-        // Add to local state cache so everything else recognizes them
+      const sessionUser = authData.user;
+      if (!sessionUser) {
+        setErrorMsg('Auth session could not be established.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 3. Fetch profile details
+      const { data: fetchedUser, error: fetchErr } = await supabase
+        .from('sheba_users')
+        .select('*')
+        .eq('id', sessionUser.id)
+        .single();
+
+      if (fetchErr || !fetchedUser) {
+        // Fallback profile if profile record not synced
+        const fallbackUser = {
+          id: sessionUser.id,
+          name: sessionUser.email?.split('@')[0] || 'Default User',
+          email: sessionUser.email || '',
+          role: 'agent' as const,
+          isActive: true
+        };
+        addUserToLocalState(fallbackUser);
+        setCurrentUser(fallbackUser);
+      } else {
         addUserToLocalState(fetchedUser);
         setCurrentUser(fetchedUser);
-        setIsSubmitting(false);
-        return;
       }
-    } catch (err) {
-      console.warn('Realtime Supabase fetch attempted and skipped:', err);
+
+      setIsSubmitting(false);
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg(err.message || 'Login attempt failed.');
+      setIsSubmitting(false);
     }
-
-    // 2. Fall back to local memory state list of users (e.g. for offline use or DUMMY_USERS admin first load before syncing tables)
-    const localUser = users.find(u => 
-      (u.email && u.email.toLowerCase() === trimmedInput) ||
-      (u.username && u.username.toLowerCase() === trimmedInput)
-    );
-
-    if (localUser) {
-      if (localUser.isActive === false) {
-        setErrorMsg('This account has been deactivated by administration. Contact support.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      const requiredPassword = localUser.password || 'password';
-      if (passwordInput !== requiredPassword) {
-        setErrorMsg('Invalid password. (Hint: default accounts use "password")');
-        setIsSubmitting(false);
-        return;
-      }
-
-      setCurrentUser(localUser);
-    } else {
-      setErrorMsg('No account found with this email Address or corporate username.');
-    }
-    setIsSubmitting(false);
   };
 
   return (

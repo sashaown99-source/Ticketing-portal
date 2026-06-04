@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import Login from './components/Login';
@@ -29,7 +31,7 @@ import {
   Database
 } from 'lucide-react';
 
-function AppContent() {
+export function AppContent() {
   const { currentUser, setCurrentUser, users, resetState } = useApp();
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);

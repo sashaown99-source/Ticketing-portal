@@ -1,11 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Default user-provided credentials
-const DEFAULT_PROJECT_ID = (import.meta as any).env?.VITE_SUPABASE_PROJECT_ID || 'savzqksbvknxrcxctfto';
-const DEFAULT_ANON_KEY = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || 'sb_publishable_oRrGv5TW-0LU6xE5N2aHiA_jSO-hMea';
+const DEFAULT_PROJECT_ID = process.env.NEXT_PUBLIC_SUPABASE_PROJECT_ID || process.env.VITE_SUPABASE_PROJECT_ID || 'savzqksbvknxrcxctfto';
+const DEFAULT_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_oRrGv5TW-0LU6xE5N2aHiA_jSO-hMea';
 
 // Retrieve credentials from localStorage or use the default
 export const getSupabaseConfig = () => {
+  if (typeof window === 'undefined') {
+    const projectId = DEFAULT_PROJECT_ID;
+    const anonKey = DEFAULT_ANON_KEY;
+    const url = `https://${projectId}.supabase.co`;
+    return { projectId, anonKey, url };
+  }
+  
   const savedId = localStorage.getItem('supabase_project_id');
   const savedKey = localStorage.getItem('supabase_anon_key');
   
@@ -17,13 +24,17 @@ export const getSupabaseConfig = () => {
 };
 
 export const setSupabaseConfig = (projectId: string, anonKey: string) => {
-  localStorage.setItem('supabase_project_id', projectId);
-  localStorage.setItem('supabase_anon_key', anonKey);
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('supabase_project_id', projectId);
+    localStorage.setItem('supabase_anon_key', anonKey);
+  }
 };
 
 export const resetSupabaseConfig = () => {
-  localStorage.removeItem('supabase_project_id');
-  localStorage.removeItem('supabase_anon_key');
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('supabase_project_id');
+    localStorage.removeItem('supabase_anon_key');
+  }
 };
 
 const config = getSupabaseConfig();
@@ -31,7 +42,7 @@ const config = getSupabaseConfig();
 // Create initial client
 export const supabase = createClient(config.url, config.anonKey, {
   auth: {
-    persistSession: false
+    persistSession: true
   }
 });
 
@@ -40,7 +51,7 @@ export const recreateSupabaseClient = (projectId: string, anonKey: string) => {
   const url = `https://${projectId}.supabase.co`;
   return createClient(url, anonKey, {
     auth: {
-      persistSession: false
+      persistSession: true
     }
   });
 };
