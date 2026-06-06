@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { TicketCategory, TicketPriority, TicketStatus } from '../types';
-import { PlusCircle, Search, Inbox, Filter, Clock, CheckCircle2, CircleDot } from 'lucide-react';
+import { PlusCircle, Search, Inbox, Filter, Clock, CheckCircle2, CircleDot, Download } from 'lucide-react';
 
 interface UserPortalProps {
   onSelectTicket: (ticketId: string) => void;
@@ -29,6 +29,48 @@ export default function UserPortal({ onSelectTicket, onOpenCreate }: UserPortalP
 
     return matchesSearch && matchesStatus && matchesPriority && matchesCategory;
   });
+
+  const handleExportCSV = () => {
+    const headers = [
+      'Ticket ID',
+      'Creator Name',
+      'Category',
+      'Subject',
+      'Description',
+      'Priority',
+      'Status',
+      'Specialist Assigned',
+      'Created At',
+      'Updated At'
+    ];
+
+    const rows = filteredTickets.map(t => [
+      t.id,
+      t.userName,
+      t.category,
+      t.subject,
+      t.description.replace(/\n/g, ' '),
+      t.priority,
+      t.status,
+      t.assignedTo || 'Unassigned',
+      new Date(t.createdAt).toLocaleString(),
+      new Date(t.updatedAt).toLocaleString()
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(e => e.map(val => `"${val.replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `sheba_ticket_queue_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Calculate Employee-specific Stats
   const stats = {
@@ -65,13 +107,22 @@ export default function UserPortal({ onSelectTicket, onOpenCreate }: UserPortalP
           <h2 className="text-xl font-bold text-slate-100">Hello, {currentUser?.name} 👋</h2>
           <p className="text-slate-400 text-xs mt-1">Need help? Submit a support ticket and direct-track resolving progress.</p>
         </div>
-        <button
-          onClick={onOpenCreate}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-xl text-xs transition shadow-md shadow-blue-500/10 self-start cursor-pointer transition-all duration-150"
-        >
-          <PlusCircle className="w-4 h-4" />
-          Create a New Ticket
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5 self-start md:self-auto">
+          <button
+            onClick={handleExportCSV}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 font-bold rounded-xl text-xs border border-emerald-500/25 transition cursor-pointer transition-all duration-150"
+          >
+            <Download className="w-4 h-4" />
+            Export Queue to CSV
+          </button>
+          <button
+            onClick={onOpenCreate}
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-xl text-xs transition shadow-md shadow-blue-500/10 cursor-pointer transition-all duration-150"
+          >
+            <PlusCircle className="w-4 h-4" />
+            Create a New Ticket
+          </button>
+        </div>
       </div>
 
       {/* KPI Stats Widgets */}

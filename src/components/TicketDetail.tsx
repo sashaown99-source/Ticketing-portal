@@ -35,8 +35,20 @@ export default function TicketDetail({ ticketId, onBack }: TicketDetailProps) {
   const [commentText, setCommentText] = useState('');
   const [isInternal, setIsInternal] = useState(false);
 
+  // Staging state variables for ticket status update flow
+  const [prevTicketStatus, setPrevTicketStatus] = useState<TicketStatus>('Open');
+  const [prevTicketId, setPrevTicketId] = useState<string>('');
+  const [stagedStatus, setStagedStatus] = useState<TicketStatus>('Open');
+  const [statusSaveSuccess, setStatusSaveSuccess] = useState(false);
+
   // Finding components
   const ticket = tickets.find(t => t.id === ticketId);
+
+  if (ticket && (ticket.status !== prevTicketStatus || ticket.id !== prevTicketId)) {
+    setPrevTicketStatus(ticket.status);
+    setPrevTicketId(ticket.id);
+    setStagedStatus(ticket.status);
+  }
   if (!ticket) {
     return (
       <div className="bg-[#0d1527] rounded-2xl p-8 text-center border border-slate-800 text-slate-100">
@@ -107,7 +119,15 @@ export default function TicketDetail({ ticketId, onBack }: TicketDetailProps) {
   };
 
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    updateTicketStatus(ticket.id, e.target.value as TicketStatus);
+    setStagedStatus(e.target.value as TicketStatus);
+  };
+
+  const handleStatusSubmit = () => {
+    updateTicketStatus(ticket.id, stagedStatus);
+    setStatusSaveSuccess(true);
+    setTimeout(() => {
+      setStatusSaveSuccess(false);
+    }, 2000);
   };
 
   const handleAssignChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -357,9 +377,9 @@ export default function TicketDetail({ ticketId, onBack }: TicketDetailProps) {
                     Modify Ticket Status
                   </label>
                   <select
-                    value={ticket.status}
+                    value={stagedStatus}
                     onChange={handleStatusChange}
-                    className="w-full px-3 py-2.5 bg-[#141f35] border border-slate-700/60 rounded-xl text-xs focus:outline-none focus:border-blue-500 focus:bg-[#1a2948] transition text-slate-100 font-bold"
+                    className="w-full px-3 py-2.5 bg-[#141f35] border border-slate-700/60 rounded-xl text-xs focus:outline-none focus:border-blue-500 focus:bg-[#1a2948] transition text-slate-100 font-bold cursor-pointer"
                   >
                     <option value="Open" className="bg-[#141f35]">🔵 Open Queue</option>
                     <option value="In Progress" className="bg-[#141f35]">🟡 In Progress</option>
@@ -367,6 +387,36 @@ export default function TicketDetail({ ticketId, onBack }: TicketDetailProps) {
                     <option value="Resolved" className="bg-[#141f35]">🟢 Resolved</option>
                     <option value="Closed" className="bg-[#141f35]">⚪ Closed</option>
                   </select>
+
+                  {stagedStatus !== ticket.status && (
+                    <div className="mt-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-2">
+                      <p className="text-[10px] font-bold text-amber-300 leading-normal">
+                        ⚠️ Status modified locally. Click "Submit" to save.
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleStatusSubmit}
+                          className="flex-1 py-1.5 px-3 bg-[#c2185b] hover:bg-[#ad144e] active:bg-[#880e4f] text-white text-[11px] font-extrabold rounded-lg shadow hover:scale-[1.01] transition duration-150 cursor-pointer"
+                        >
+                          Submit Change
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setStagedStatus(ticket.status)}
+                          className="py-1.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-bold rounded-lg transition border border-slate-700/60 cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {statusSaveSuccess && (
+                    <div className="mt-2 p-2 bg-emerald-500/15 border border-emerald-500/20 text-emerald-400 font-bold text-[10px] rounded-lg text-center animate-feed">
+                      ✓ Status updated successfully!
+                    </div>
+                  )}
                 </div>
 
                 {/* Assignment - only available to Super Admin and Supervisor */}

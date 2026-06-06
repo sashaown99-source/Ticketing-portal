@@ -7,7 +7,8 @@ import {
   AlertTriangle, 
   CheckCircle, 
   Search, 
-  TrendingUp, 
+  TrendingUp,
+  Download
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -15,7 +16,7 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ onSelectTicket }: DashboardProps) {
-  const { tickets, auditLogs, comments, updateTicketStatus, assignTicket, users } = useApp();
+  const { currentUser, tickets, auditLogs, comments, updateTicketStatus, assignTicket, users } = useApp();
   
   // Search and Filter State
   const [search, setSearch] = useState('');
@@ -85,9 +86,68 @@ export default function Dashboard({ onSelectTicket }: DashboardProps) {
   // Recent Comments Feed
   const recentComments = [...comments].sort((a,b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 4);
 
+  const handleExportCSV = () => {
+    const headers = [
+      'Ticket ID',
+      'Employee Name',
+      'Category',
+      'Subject',
+      'Description',
+      'Priority',
+      'Status',
+      'Specialist Assigned',
+      'Created At',
+      'Updated At'
+    ];
+
+    const rows = tickets.map(t => [
+      t.id,
+      t.userName,
+      t.category,
+      t.subject,
+      t.description.replace(/\n/g, ' '),
+      t.priority,
+      t.status,
+      t.assignedTo || 'Unassigned',
+      new Date(t.createdAt).toLocaleString(),
+      new Date(t.updatedAt).toLocaleString()
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(e => e.map(val => `"${val.replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `sheba_all_tickets_report_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6 text-slate-100">
       
+      {/* Dashboard Top Header Section with Export Reports */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-[#0d1527] rounded-2xl border border-slate-800/80 p-5 shadow-sm">
+        <div>
+          <h2 className="text-lg font-bold text-slate-100">IT Operations Dashboard</h2>
+          <p className="text-slate-400 text-xs mt-0.5">System-wide metrics and support tickets analysis.</p>
+        </div>
+        {currentUser?.role === 'Super Admin' && (
+          <button
+            onClick={handleExportCSV}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-xl text-xs transition shadow-md shadow-emerald-500/10 cursor-pointer"
+          >
+            <Download className="w-4 h-4" />
+            Download Master CSV Report
+          </button>
+        )}
+      </div>
+
       {/* KPI Numerical Counters Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         
