@@ -22,7 +22,7 @@ export default function UserList() {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [employeeId, setEmployeeId] = useState('');
-  const [department, setDepartment] = useState('');
+  const [department, setDepartment] = useState('Telesales');
   const [role, setRole] = useState<Role>('Agent');
   const [password, setPassword] = useState('');
   const [isActiveState, setIsActiveState] = useState(true);
@@ -362,13 +362,18 @@ export default function UserList() {
                 {/* Assigned department */}
                 <div className="space-y-1">
                   <label className="block text-[11px] font-bold text-slate-300">Assigned Corporate Department *</label>
-                  <input
-                    type="text"
+                  <select
                     required
                     value={department}
                     onChange={e => setDepartment(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#111a2f] border border-slate-800 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-500 focus:bg-[#141f35] text-slate-100"
-                  />
+                    className="w-full px-3 py-2 bg-[#111a2f] border border-slate-800 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-500 focus:bg-[#141f35] text-slate-100 cursor-pointer"
+                  >
+                    <option value="Telesales">Telesales</option>
+                    <option value="Backoffice">Backoffice</option>
+                    <option value="Inbound">Inbound</option>
+                    <option value="DQM">DQM</option>
+                    <option value="Marketing">Marketing</option>
+                  </select>
                 </div>
 
                 {/* Selected Role */}

@@ -122,7 +122,11 @@ export default function Dashboard({ onSelectTicket }: DashboardProps) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `sheba_all_tickets_report_${new Date().toISOString().split('T')[0]}.csv`);
+    const filename = currentUser?.role === 'Super Admin' 
+      ? `sheba_all_tickets_report_${new Date().toISOString().split('T')[0]}.csv`
+      : `sheba_${currentUser?.department || 'dept'}_tickets_report_${new Date().toISOString().split('T')[0]}.csv`;
+    
+    link.setAttribute('download', filename);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -137,13 +141,13 @@ export default function Dashboard({ onSelectTicket }: DashboardProps) {
           <h2 className="text-lg font-bold text-slate-100">IT Operations Dashboard</h2>
           <p className="text-slate-400 text-xs mt-0.5">System-wide metrics and support tickets analysis.</p>
         </div>
-        {currentUser?.role === 'Super Admin' && (
+        {(currentUser?.role === 'Super Admin' || currentUser?.role === 'Supervisor') && (
           <button
             onClick={handleExportCSV}
             className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-xl text-xs transition shadow-md shadow-emerald-500/10 cursor-pointer"
           >
             <Download className="w-4 h-4" />
-            Download Master CSV Report
+            {currentUser?.role === 'Super Admin' ? 'Download Master CSV Report' : `Export ${currentUser.department || 'Department'} Report`}
           </button>
         )}
       </div>

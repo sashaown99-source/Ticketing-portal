@@ -25,7 +25,9 @@ import {
   Users,
   User,
   Cloud,
-  Database
+  Database,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { SUPABASE_SQL_SETUP } from './lib/supabaseClient';
 
@@ -45,6 +47,20 @@ function AppContent() {
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sqlCopied, setSqlCopied] = useState(false);
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('sheba_portal_theme');
+      return saved !== 'light';
+    } catch (e) {
+      return true;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('sheba_portal_theme', isDark ? 'dark' : 'light');
+    } catch (e) {}
+  }, [isDark]);
 
   const handleCopySql = () => {
     navigator.clipboard.writeText(SUPABASE_SQL_SETUP);
@@ -91,7 +107,103 @@ function AppContent() {
   const currentRoleName = `${currentUser.role} Portal`;
 
   return (
-    <div className="min-h-screen bg-[#060a13] flex flex-col text-slate-100">
+    <div id="portal-root-wrapper" className={`min-h-screen bg-[#060a13] flex flex-col text-slate-100 transition-colors duration-200 ${isDark ? '' : 'light-mode'}`}>
+      <style>{`
+        /* Custom highly crafted light mode styles */
+        .light-mode {
+          background-color: #f1f5f9 !important;
+          color: #0f172a !important;
+        }
+        
+        .light-mode header,
+        .light-mode aside,
+        .light-mode .bg-\[\#0d1527\],
+        .light-mode .bg-\[\#0d1527\]\/80 {
+          background-color: #ffffff !important;
+          border-color: #e2e8f0 !important;
+          color: #0f172a !important;
+        }
+        
+        .light-mode aside button {
+          color: #475569 !important;
+        }
+        
+        .light-mode aside button:hover {
+          background-color: #f1f5f9 !important;
+          color: #0f172a !important;
+        }
+        
+        .light-mode aside button[class*="bg-blue-600"] {
+          background-color: rgba(37, 99, 235, 0.1) !important;
+          color: #2563eb !important;
+          border-color: #bfdbfe !important;
+        }
+        
+        .light-mode .text-slate-100 {
+          color: #0f172a !important;
+        }
+        .light-mode .text-slate-200 {
+          color: #1e293b !important;
+        }
+        .light-mode .text-slate-300 {
+          color: #334155 !important;
+        }
+        .light-mode .text-slate-400 {
+          color: #475569 !important;
+        }
+        .light-mode .text-slate-450 {
+          color: #5d6b7e !important;
+        }
+        
+        .light-mode .bg-\[\#141f35\],
+        .light-mode .bg-\[\#111a2f\],
+        .light-mode .bg-slate-900,
+        .light-mode .bg-\[\#121c33\]\/70,
+        .light-mode .bg-\[\#121c33\] {
+          background-color: #f8fafc !important;
+          border-color: #cbd5e1 !important;
+          color: #0f172a !important;
+        }
+        
+        .light-mode select,
+        .light-mode input,
+        .light-mode textarea {
+          background-color: #ffffff !important;
+          border-color: #cbd5e1 !important;
+          color: #0f172a !important;
+        }
+        
+        .light-mode select option {
+          background-color: #ffffff !important;
+          color: #0f172a !important;
+        }
+        
+        .light-mode .border-slate-800,
+        .light-mode .border-slate-800\/80,
+        .light-mode .border-slate-700\/60,
+        .light-mode .border-slate-850 {
+          border-color: #cbd5e1 !important;
+        }
+        
+        .light-mode table thead tr {
+          background-color: #f1f5f9 !important;
+          color: #334155 !important;
+        }
+        
+        .light-mode table tbody tr:hover {
+          background-color: #f8fafc !important;
+        }
+        
+        .light-mode .bg-\[\#1c2e4a\]\/60 {
+          background-color: #eff6ff !important;
+          border-color: #bfdbfe !important;
+        }
+        
+        .light-mode .bg-\[\#1e1b4b\]\/60 {
+          background-color: #faf5ff !important;
+          border-color: #e9d5ff !important;
+        }
+      `}</style>
       
       {/* Main Structural Frame */}
       <div className="flex-1 flex flex-col md:flex-row relative">
@@ -108,12 +220,21 @@ function AppContent() {
             </div>
             <span className="font-bold text-sm tracking-wide text-slate-100">Sheba.xyz Ticketing Portal</span>
           </div>
-          <button 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-1 px-2.5 text-slate-400 rounded-lg hover:bg-slate-800 transition"
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setIsDark(!isDark)}
+              className="p-1 px-2 text-slate-400 rounded-lg hover:bg-slate-800 transition"
+              title="Toggle Theme"
+            >
+              {isDark ? <Sun className="w-4.5 h-4.5 text-amber-500 animate-pulse" /> : <Moon className="w-4.5 h-4.5 text-indigo-400" />}
+            </button>
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-1 px-2.5 text-slate-400 rounded-lg hover:bg-slate-800 transition"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5 animate-pulse" />}
+            </button>
+          </div>
         </header>
 
         {/* Sidebar Left Rail Navigation */}
@@ -261,6 +382,20 @@ function AppContent() {
                 )}
               </div>
             )}
+            
+            {/* Theme Toggle Button */}
+            <button
+              onClick={() => setIsDark(!isDark)}
+              className="w-full text-left px-3 py-2 text-slate-400 hover:text-blue-400 hover:bg-slate-800/20 rounded-xl text-xs font-semibold flex items-center justify-between transition cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                {isDark ? <Sun className="w-3.5 h-3.5 text-amber-450" /> : <Moon className="w-3.5 h-3.5 text-indigo-400" />}
+                <span>{isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}</span>
+              </div>
+              <span className="text-[9px] bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider text-slate-400">
+                {isDark ? 'Dark' : 'Light'}
+              </span>
+            </button>
             
             <button
               onClick={() => setCurrentUser(null)}

@@ -12,7 +12,7 @@ export default function UserManagement() {
   // States for user register/edit form
   const [name, setName] = useState('');
   const [employeeId, setEmployeeId] = useState('');
-  const [department, setDepartment] = useState('');
+  const [department, setDepartment] = useState('Telesales');
   const [role, setRole] = useState<Role>('Agent');
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
@@ -42,7 +42,7 @@ export default function UserManagement() {
     setEditingUser(null);
     setName('');
     setEmployeeId('');
-    setDepartment('');
+    setDepartment('Telesales');
     setRole('Agent');
     setEmail('');
     setUsername('');
@@ -229,17 +229,22 @@ export default function UserManagement() {
               <div>
                 <label className="block mb-1 font-semibold text-slate-300">Department *</label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-2.5 text-slate-400">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-2.5 text-slate-400 z-10">
                     <Building className="w-3.5 h-3.5" />
                   </span>
-                  <input
-                    type="text"
+                  <select
                     required
                     value={department}
                     onChange={e => setDepartment(e.target.value)}
-                    placeholder="e.g. Tech Operations"
-                    className="w-full pl-8 pr-3 py-2 bg-[#141f35] border border-slate-700/60 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-[#1a2948] text-slate-100 placeholder-slate-500 transition"
-                  />
+                    className="w-full pl-8 pr-3 py-2 bg-[#141f35] border border-slate-700/60 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-[#1a2948] text-slate-100 transition font-semibold cursor-pointer"
+                  >
+                    <option value="" disabled>Select Department</option>
+                    <option value="Telesales">Telesales</option>
+                    <option value="Backoffice">Backoffice</option>
+                    <option value="Inbound">Inbound</option>
+                    <option value="DQM">DQM</option>
+                    <option value="Marketing">Marketing</option>
+                  </select>
                 </div>
               </div>
             </div>

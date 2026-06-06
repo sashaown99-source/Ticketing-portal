@@ -705,9 +705,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const visibleTickets = React.useMemo(() => {
     if (!currentUser) return [];
     
-    // Super Admin and Supervisor have system-wide visibility to oversee, assign, and report
-    if (currentUser.role === 'Super Admin' || currentUser.role === 'Supervisor') {
+    // Super Admin has system-wide visibility to oversee, assign, and report
+    if (currentUser.role === 'Super Admin') {
       return tickets;
+    }
+
+    // Supervisor only gets tickets within their specific department
+    if (currentUser.role === 'Supervisor') {
+      return tickets.filter(t => {
+        const creator = users.find(u => u.id === t.userId);
+        const supervisorDept = currentUser.department?.trim().toLowerCase();
+        const creatorDept = creator?.department?.trim().toLowerCase();
+        return supervisorDept && creatorDept === supervisorDept;
+      });
     }
     
     // Agent can only see:
@@ -721,7 +731,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const isDeptMatched = t.assignedDepartment && currentUser.department && (t.assignedDepartment.toLowerCase() === currentUser.department.toLowerCase());
       return isOwner || isExplicitAssignee || isRoleMatched || isDeptMatched;
     });
-  }, [tickets, currentUser]);
+  }, [tickets, users, currentUser]);
 
   return (
     <AppContext.Provider value={{
