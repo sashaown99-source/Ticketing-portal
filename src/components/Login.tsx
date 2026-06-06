@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { Shield, Key, Mail, LogIn } from 'lucide-react';
+import { Shield, Key, Mail, LogIn, UserPlus, FileText, User as UserIcon, Building } from 'lucide-react';
 import { Role } from '../types';
 
 export default function Login() {
   const { users, setCurrentUser, registerUser } = useApp();
-  const [emailInput, setEmailInput] = useState('');
-  const [passwordInput, setPasswordInput] = useState('');
-  const [selectedRole, setSelectedRole] = useState<Role>('Agent');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Login state fields
+  const [emailInput, setEmailInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
 
   const handleCustomLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,17 +71,19 @@ export default function Login() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100 p-8 space-y-6">
         
         {/* Brand Header */}
-        <div className="text-center space-y-2">
-          <div className="mx-auto flex justify-center pb-2">
+        <div className="text-center space-y-2 animate-feed">
+          <div className="mx-auto flex justify-center pb-1">
             <img 
               src="/src/assets/images/sheba_logo_1780297177657.png" 
               alt="Sheba.xyz" 
-              className="w-20 h-20 object-contain rounded-2xl shadow-sm border border-slate-100/60"
+              className="w-16 h-16 object-contain rounded-2xl shadow-sm border border-slate-150"
               referrerPolicy="no-referrer"
             />
           </div>
           <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Sheba.xyz Ticketing Portal</h2>
-          <p className="text-slate-500 text-xs">Sign in to your authorized support or manager desk account.</p>
+          <p className="text-slate-500 text-xs">
+            Sign in to your authorized support or manager desk account.
+          </p>
         </div>
 
         {/* Error notification */}
@@ -106,7 +109,7 @@ export default function Login() {
                 id="login_email"
                 type="text"
                 required
-                placeholder="Enter email or username"
+                placeholder="Enter email or username (e.g. sashaown99@gmail.com)"
                 value={emailInput}
                 onChange={e => setEmailInput(e.target.value)}
                 className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:bg-white text-slate-900 transition font-medium"
@@ -133,6 +136,9 @@ export default function Login() {
                 className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:bg-white text-slate-900 transition font-medium"
               />
             </div>
+            <div className="text-[10px] text-slate-400 italic">
+              Sasha's Default Password is "password". Any completely new email will login/register automatically.
+            </div>
           </div>
 
           {/* Action button */}
@@ -157,8 +163,6 @@ export default function Login() {
             )}
           </button>
         </form>
-
-
 
       </div>
     </div>
