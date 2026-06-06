@@ -4,14 +4,9 @@ import { Role, User } from '../types';
 import { Search, Mail, Building, Hash, Shield, UserCheck, AlertCircle, Edit, X, Key, Eye, EyeOff, Save, User as UserIcon } from 'lucide-react';
 
 const ROLE_DETAILS: Record<Role, { label: string; badgeStyle: string; icon: string }> = {
-  'agent': { label: 'Support Desk Agent', badgeStyle: 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20', icon: '📞' },
+  'Agent': { label: 'Support Desk Agent', badgeStyle: 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20', icon: '📞' },
   'Supervisor': { label: 'Operations Supervisor', badgeStyle: 'bg-violet-500/10 text-violet-400 border border-violet-500/20', icon: '⚡' },
-  'Manager': { label: 'Business Unit Manager', badgeStyle: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20', icon: '💼' },
-  'Admin': { label: 'Portal Administrator', badgeStyle: 'bg-blue-500/10 text-blue-400 border border-blue-500/20', icon: '👤' },
-  'IT': { label: 'IT Systems Engineer', badgeStyle: 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20', icon: '💻' },
-  'HR': { label: 'HR Lead Specialist', badgeStyle: 'bg-amber-500/10 text-amber-400 border border-amber-500/20', icon: '🤝' },
-  'Finance': { label: 'Finance Controller', badgeStyle: 'bg-teal-500/10 text-teal-400 border border-teal-500/20', icon: '🪙' },
-  'Admin access': { label: 'Master Systems Admin', badgeStyle: 'bg-rose-500/10 text-rose-400 border border-rose-500/20', icon: '👑' },
+  'Super Admin': { label: 'Master Systems Admin', badgeStyle: 'bg-rose-500/10 text-rose-400 border border-rose-500/20', icon: '👑' },
 };
 
 export default function UserList() {
@@ -28,7 +23,7 @@ export default function UserList() {
   const [username, setUsername] = useState('');
   const [employeeId, setEmployeeId] = useState('');
   const [department, setDepartment] = useState('');
-  const [role, setRole] = useState<Role>('agent');
+  const [role, setRole] = useState<Role>('Agent');
   const [password, setPassword] = useState('');
   const [isActiveState, setIsActiveState] = useState(true);
 
@@ -161,14 +156,9 @@ export default function UserList() {
             className="w-full bg-[#111a2f] border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-500 text-slate-100 font-bold"
           >
             <option value="all">📁 All Roles / Departments</option>
-            <option value="agent">📞 Support Agent</option>
+            <option value="Agent">📞 Support Agent</option>
             <option value="Supervisor">⚡ Supervisor</option>
-            <option value="Manager">💼 Business Manager</option>
-            <option value="Admin">👤 Admin</option>
-            <option value="IT">💻 IT Engineer</option>
-            <option value="HR">🤝 HR Specialist</option>
-            <option value="Finance">🪙 Finance Controller</option>
-            <option value="Admin access">👑 Master Admin</option>
+            <option value="Super Admin">👑 Super Admin</option>
           </select>
         </div>
       </div>
@@ -389,14 +379,9 @@ export default function UserList() {
                     onChange={e => setRole(e.target.value as Role)}
                     className="w-full px-3 py-2 bg-[#111a2f] border border-slate-800 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-500 focus:bg-[#141f35] text-slate-100"
                   >
-                    <option value="agent">📞 Support Agent</option>
+                    <option value="Agent">📞 Support Agent</option>
                     <option value="Supervisor">⚡ Supervisor</option>
-                    <option value="Manager">💼 Business Manager</option>
-                    <option value="Admin">👤 Admin</option>
-                    <option value="IT">💻 IT Engineer</option>
-                    <option value="HR">🤝 HR Specialist</option>
-                    <option value="Finance">🪙 Finance Controller</option>
-                    <option value="Admin access">👑 Master Admin</option>
+                    <option value="Super Admin">👑 Super Admin</option>
                   </select>
                 </div>
 

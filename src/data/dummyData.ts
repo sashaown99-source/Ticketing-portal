@@ -5,7 +5,7 @@ export const DUMMY_USERS: User[] = [
     id: 'emp1',
     name: 'Sasha',
     email: 'sashaown99@gmail.com',
-    role: 'Admin access',
+    role: 'Super Admin',
     username: 'sashaown',
     employeeId: 'EMP-001',
     department: 'Corporate Admin',

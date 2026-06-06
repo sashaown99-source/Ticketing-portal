@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Ticket, Comment, AuditLog, TicketCategory, TicketPriority, TicketStatus, Role } from '../types';
 import { DUMMY_USERS, DUMMY_TICKETS, DUMMY_COMMENTS, DUMMY_AUDIT_LOGS } from '../data/dummyData';
-import { supabase } from '../lib/supabaseClient';
 
 interface AppContextType {
   currentUser: User | null;
@@ -46,7 +45,6 @@ interface AppContextType {
   assignTicket: (ticketId: string, assignedToName: string) => void;
   resetState: () => void;
   importDatabaseState: (data: { users: User[]; tickets: Ticket[]; comments: Comment[]; auditLogs: AuditLog[] }) => void;
-  addUserToLocalState: (user: User) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -89,36 +87,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const saved = localStorage.getItem('it_audit_logs');
     return saved ? JSON.parse(saved) : DUMMY_AUDIT_LOGS;
   });
-
-  // Attempt to fetch from Supabase on mount
-  useEffect(() => {
-    async function loadRealtimeSupabaseData() {
-      try {
-        const { data: dbUsers, error: uErr } = await supabase.from('sheba_users').select('*');
-        if (uErr) throw uErr;
-
-        const { data: dbTickets, error: tErr } = await supabase.from('sheba_tickets').select('*');
-        if (tErr) throw tErr;
-
-        const { data: dbComments, error: cErr } = await supabase.from('sheba_comments').select('*');
-        if (cErr) throw cErr;
-
-        const { data: dbAudit, error: aErr } = await supabase.from('sheba_audit_logs').select('*');
-        if (aErr) throw aErr;
-
-        // If load from Supabase works successfully
-        if (dbUsers && dbUsers.length > 0) setUsers(dbUsers);
-        if (dbTickets) setTickets(dbTickets);
-        if (dbComments) setComments(dbComments);
-        if (dbAudit) setAuditLogs(dbAudit);
-        
-        console.log('Successfully synchronized state with Supabase PostgreSQL tables.');
-      } catch (err: any) {
-        console.warn('Realtime Supabase initialization skipped or failed (tables might not be established yet):', err.message);
-      }
-    }
-    loadRealtimeSupabaseData();
-  }, []);
 
   useEffect(() => {
     localStorage.setItem('it_current_user', currentUser ? JSON.stringify(currentUser) : '');
@@ -164,11 +132,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     setUsers(prev => [...prev, newUser]);
 
-    // Send to Supabase
-    supabase.from('sheba_users').insert(newUser).then(({ error }) => {
-      if (error) console.error('Supabase error during registerUser:', error);
-    });
-
     return newUser;
   };
 
@@ -201,11 +164,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           setCurrentUser(updated);
         }
 
-        // Send to Supabase
-        supabase.from('sheba_users').update(updated).eq('id', id).then(({ error }) => {
-          if (error) console.error('Supabase error during updateUser:', error);
-        });
-
         return updated;
       }
       return u;
@@ -214,11 +172,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const deleteUser = (id: string) => {
     setUsers(prev => prev.filter(u => u.id !== id));
-
-    // Send to Supabase
-    supabase.from('sheba_users').delete().eq('id', id).then(({ error }) => {
-      if (error) console.error('Supabase error during deleteUser:', error);
-    });
   };
 
   const addTicket = (
@@ -261,14 +214,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createdAt: new Date().toISOString()
     };
     setAuditLogs(prev => [newLog, ...prev]);
-
-    // Send to Supabase
-    supabase.from('sheba_tickets').insert(newTicket).then(({ error }) => {
-      if (error) console.error('Supabase error during addTicket (ticket):', error);
-    });
-    supabase.from('sheba_audit_logs').insert(newLog).then(({ error }) => {
-      if (error) console.error('Supabase error during addTicket (audit):', error);
-    });
   };
 
   const addComment = (ticketId: string, commentText: string, isInternal: boolean) => {
@@ -299,17 +244,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createdAt: currentTimestamp
     };
     setAuditLogs(prev => [newLog, ...prev]);
-
-    // Send to Supabase
-    supabase.from('sheba_comments').insert(newComment).then(({ error }) => {
-      if (error) console.error('Supabase error during addComment (comment):', error);
-    });
-    supabase.from('sheba_tickets').update({ updatedAt: currentTimestamp }).eq('id', ticketId).then(({ error }) => {
-      if (error) console.error('Supabase error during addComment (ticket update):', error);
-    });
-    supabase.from('sheba_audit_logs').insert(newLog).then(({ error }) => {
-      if (error) console.error('Supabase error during addComment (audit):', error);
-    });
   };
 
   const updateTicketStatus = (ticketId: string, newStatus: TicketStatus) => {
@@ -336,14 +270,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createdAt: currentTimestamp
     };
     setAuditLogs(prev => [newLog, ...prev]);
-
-    // Send to Supabase
-    supabase.from('sheba_tickets').update({ status: newStatus, updatedAt: currentTimestamp }).eq('id', ticketId).then(({ error }) => {
-      if (error) console.error('Supabase error during updateTicketStatus (ticket):', error);
-    });
-    supabase.from('sheba_audit_logs').insert(newLog).then(({ error }) => {
-      if (error) console.error('Supabase error during updateTicketStatus (audit):', error);
-    });
   };
 
   const assignTicket = (ticketId: string, assignedToName: string) => {
@@ -370,14 +296,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createdAt: currentTimestamp
     };
     setAuditLogs(prev => [newLog, ...prev]);
-
-    // Send to Supabase
-    supabase.from('sheba_tickets').update({ assignedTo: assignedToName, updatedAt: currentTimestamp }).eq('id', ticketId).then(({ error }) => {
-      if (error) console.error('Supabase error during assignTicket (ticket):', error);
-    });
-    supabase.from('sheba_audit_logs').insert(newLog).then(({ error }) => {
-      if (error) console.error('Supabase error during assignTicket (audit):', error);
-    });
   };
 
   const resetState = () => {
@@ -414,33 +332,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const addUserToLocalState = (newUser: User) => {
-    setUsers(prev => {
-      const match = prev.find(u => u.id === newUser.id || u.email.toLowerCase() === newUser.email.toLowerCase());
-      if (match) {
-        return prev.map(u => (u.id === newUser.id || u.email.toLowerCase() === newUser.email.toLowerCase()) ? newUser : u);
-      }
-      return [...prev, newUser];
-    });
-  };
-
   // Filter tickets by user's role access to ensure they only see what is relevant:
-  // "jake jei role er access dawha hobe tara sudu er related ticket nia kaj korte parbe"
   const visibleTickets = React.useMemo(() => {
     if (!currentUser) return [];
     
-    // Master Admin access role can see everything
-    if (currentUser.role === 'Admin access') return tickets;
+    // Super Admin and Supervisor have system-wide visibility to oversee, assign, and report
+    if (currentUser.role === 'Super Admin' || currentUser.role === 'Supervisor') {
+      return tickets;
+    }
     
-    // Let's filter tickets:
-    // 1. Author of the ticket (can always see their own creations)
-    // 2. The ticket is assigned to their specific Role (e.g., 'IT', 'HR', 'Finance', 'Manager', 'Supervisor', 'Admin', 'agent')
-    // 3. Or they are explicitly designated as the assignee (assignedTo === currentUser.name)
+    // Agent can only see:
+    // - Tickets they created themselves
+    // - Tickets explicitly assigned to their username/name
+    // - Tickets matching their department role or assigned Department
     return tickets.filter(t => {
       const isOwner = t.userId === currentUser.id;
+      const isExplicitAssignee = t.assignedTo && currentUser.name && (t.assignedTo.toLowerCase() === currentUser.name.toLowerCase());
       const isRoleMatched = t.assignedRole === currentUser.role;
-      const isExplicitAssignee = t.assignedTo === currentUser.name;
-      return isOwner || isRoleMatched || isExplicitAssignee;
+      const isDeptMatched = t.assignedDepartment && currentUser.department && (t.assignedDepartment.toLowerCase() === currentUser.department.toLowerCase());
+      return isOwner || isExplicitAssignee || isRoleMatched || isDeptMatched;
     });
   }, [tickets, currentUser]);
 
@@ -460,8 +370,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       updateTicketStatus,
       assignTicket,
       resetState,
-      importDatabaseState,
-      addUserToLocalState
+      importDatabaseState
     }}>
       {children}
     </AppContext.Provider>

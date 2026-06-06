@@ -13,7 +13,7 @@ export default function UserManagement() {
   const [name, setName] = useState('');
   const [employeeId, setEmployeeId] = useState('');
   const [department, setDepartment] = useState('');
-  const [role, setRole] = useState<Role>('agent');
+  const [role, setRole] = useState<Role>('Agent');
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -43,7 +43,7 @@ export default function UserManagement() {
     setName('');
     setEmployeeId('');
     setDepartment('');
-    setRole('agent');
+    setRole('Agent');
     setEmail('');
     setUsername('');
     setPassword('');
@@ -117,7 +117,7 @@ export default function UserManagement() {
     setName('');
     setEmployeeId('');
     setDepartment('');
-    setRole('agent');
+    setRole('Agent');
     setEmail('');
     setUsername('');
     setPassword('');
@@ -125,14 +125,9 @@ export default function UserManagement() {
   };
 
   const ROLE_BADGE_STYLE: Record<Role, string> = {
-    'Admin access': 'bg-red-500/10 text-red-400 border border-red-500/20',
-    'Admin': 'bg-blue-500/10 text-blue-400 border border-blue-500/20',
+    'Super Admin': 'bg-red-500/10 text-red-400 border border-red-500/20',
     'Supervisor': 'bg-purple-500/10 text-purple-400 border border-purple-500/20',
-    'Manager': 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
-    'IT': 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20',
-    'HR': 'bg-pink-500/10 text-pink-400 border border-pink-500/20',
-    'Finance': 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
-    'agent': 'bg-slate-500/10 text-slate-400 border border-slate-500/20'
+    'Agent': 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
   };
 
   return (
@@ -312,14 +307,9 @@ export default function UserManagement() {
                 onChange={e => setRole(e.target.value as Role)}
                 className="w-full px-3 py-2.5 bg-[#141f35] border border-slate-700/60 rounded-xl text-xs focus:outline-none focus:border-blue-500 focus:bg-[#1a2948] text-slate-100 font-semibold"
               >
-                <option value="agent">📞 agent &mdash; Standard Support Desk Employee</option>
+                <option value="Agent">📞 Agent &mdash; Support Desk Agent</option>
                 <option value="Supervisor">⚡ Supervisor &mdash; Operations Supervisor</option>
-                <option value="Manager">💼 Manager &mdash; Business Unit Manager</option>
-                <option value="Admin">👤 Admin &mdash; Portal Administrator</option>
-                <option value="IT">💻 IT &mdash; IT Systems Engineer</option>
-                <option value="HR">🤝 HR &mdash; HR Lead Specialist</option>
-                <option value="Finance">🪙 Finance &mdash; Finance Controller</option>
-                <option value="Admin access">👑 Admin access &mdash; Master Systems Admin</option>
+                <option value="Super Admin">👑 Super Admin &mdash; Master Systems Admin</option>
               </select>
               <p className="text-[10px] text-slate-450 mt-1">This user will only see and work with tickets related to their specific department role access details.</p>
             </div>

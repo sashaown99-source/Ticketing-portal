@@ -190,7 +190,7 @@ export default function CreateTicket({ onSuccess }: CreateTicketComponentProps) 
             <div className="grid sm:grid-cols-2 gap-4 pt-2">
               <div>
                 <label className="block text-xs font-bold text-slate-300 mb-2">
-                  Assign by (User)
+                  Assign to (User)
                 </label>
                 <select
                   value={assignedBy}

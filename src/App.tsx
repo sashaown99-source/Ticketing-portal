@@ -7,7 +7,6 @@ import CreateTicket from './components/CreateTicket';
 import TicketDetail from './components/TicketDetail';
 import UserManagement from './components/UserManagement';
 import UserList from './components/UserList';
-import SupabaseSync from './components/SupabaseSync';
 
 // Icons
 import { 
@@ -25,8 +24,7 @@ import {
   RefreshCw,
   Users,
   User,
-  Cloud,
-  Database
+  Cloud
 } from 'lucide-react';
 
 function AppContent() {
@@ -38,7 +36,7 @@ function AppContent() {
   // Sync default active tabs on login/role switch
   useEffect(() => {
     if (currentUser) {
-      const isPowerRole = ['Admin access', 'Admin', 'Supervisor'].includes(currentUser.role);
+      const isPowerRole = ['Super Admin', 'Supervisor'].includes(currentUser.role);
       if (isPowerRole) {
         setActiveTab('dashboard');
       } else {
@@ -137,7 +135,7 @@ function AppContent() {
                 Performance Dashboard
               </button>
 
-              {currentUser.role === 'Admin access' && (
+              {currentUser.role === 'Super Admin' && (
                 <button
                   onClick={() => { setActiveTab('user_management'); setMobileMenuOpen(false); }}
                   className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition cursor-pointer ${
@@ -163,17 +161,19 @@ function AppContent() {
                 Role Ticket Queue
               </button>
 
-              <button
-                onClick={() => { setActiveTab('user_list'); setMobileMenuOpen(false); }}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition cursor-pointer ${
-                  activeTab === 'user_list'
-                    ? 'bg-blue-600/15 text-blue-400 font-bold border border-blue-500/20 bg-blue-500/5' 
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
-                }`}
-              >
-                <Users className="w-4 h-4 shrink-0 text-slate-400" />
-                User List
-              </button>
+              {currentUser.role !== 'Agent' && (
+                <button
+                  onClick={() => { setActiveTab('user_list'); setMobileMenuOpen(false); }}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition cursor-pointer ${
+                    activeTab === 'user_list'
+                      ? 'bg-blue-600/15 text-blue-400 font-bold border border-blue-500/20 bg-blue-500/5' 
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+                  }`}
+                >
+                  <Users className="w-4 h-4 shrink-0 text-slate-400" />
+                  User List
+                </button>
+              )}
 
               <button
                 onClick={() => { setActiveTab('create_ticket'); setMobileMenuOpen(false); }}
@@ -185,18 +185,6 @@ function AppContent() {
               >
                 <PlusCircle className="w-4 h-4 shrink-0 text-slate-400" />
                 Create a New Ticket
-              </button>
-
-              <button
-                onClick={() => { setActiveTab('supabase_sync'); setMobileMenuOpen(false); }}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition cursor-pointer ${
-                  activeTab === 'supabase_sync'
-                    ? 'bg-blue-600/15 text-blue-400 font-bold border border-blue-500/20 bg-blue-500/5' 
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
-                }`}
-              >
-                <Database className="w-4 h-4 shrink-0 text-slate-450" />
-                Supabase Database
               </button>
 
 
@@ -242,11 +230,11 @@ function AppContent() {
             <Dashboard onSelectTicket={navigateToTicket} />
           )}
 
-          {activeTab === 'user_management' && currentUser.role === 'Admin access' && (
+          {activeTab === 'user_management' && currentUser.role === 'Super Admin' && (
             <UserManagement />
           )}
 
-          {activeTab === 'user_list' && (
+          {activeTab === 'user_list' && currentUser.role !== 'Agent' && (
             <UserList />
           )}
 
@@ -261,17 +249,13 @@ function AppContent() {
             <CreateTicket onSuccess={handleCreateSuccess} />
           )}
 
-          {activeTab === 'supabase_sync' && (
-            <SupabaseSync />
-          )}
-
 
 
           {activeTab === 'ticket_detail' && selectedTicketId && (
             <TicketDetail 
               ticketId={selectedTicketId} 
               onBack={() => {
-                const isPowerRole = ['Admin access', 'Admin', 'Supervisor'].includes(currentUser.role);
+                const isPowerRole = ['Super Admin', 'Supervisor'].includes(currentUser.role);
                 if (isPowerRole) {
                   setActiveTab('dashboard');
                 } else {

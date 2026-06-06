@@ -1,12 +1,7 @@
 export type Role = 
-  | 'agent' 
+  | 'Super Admin' 
   | 'Supervisor' 
-  | 'Manager' 
-  | 'Admin' 
-  | 'IT' 
-  | 'HR' 
-  | 'Finance' 
-  | 'Admin access';
+  | 'Agent';
 
 export interface User {
   id: string;

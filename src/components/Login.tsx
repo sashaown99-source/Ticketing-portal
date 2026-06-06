@@ -1,63 +1,30 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { supabase } from '../lib/supabaseClient';
 import { Shield, Key, Mail, LogIn } from 'lucide-react';
+import { Role } from '../types';
 
 export default function Login() {
-  const { users, setCurrentUser, addUserToLocalState } = useApp();
+  const { users, setCurrentUser, registerUser } = useApp();
   const [emailInput, setEmailInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
+  const [selectedRole, setSelectedRole] = useState<Role>('Agent');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleCustomLogin = async (e: React.FormEvent) => {
+  const handleCustomLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setIsSubmitting(true);
 
-    const trimmedInput = emailInput.trim().toLowerCase();
-
-    try {
-      // 1. Try to fetch user directly from Supabase first
-      const { data: dbUsers, error: supabaseError } = await supabase
-        .from('sheba_users')
-        .select('*');
-      
-      let fetchedUser: any = null;
-      if (!supabaseError && dbUsers && dbUsers.length > 0) {
-        // Find matching email or username
-        fetchedUser = dbUsers.find((u: any) => 
-          (u.email && u.email.toLowerCase() === trimmedInput) ||
-          (u.username && u.username.toLowerCase() === trimmedInput)
-        );
-      }
-
-      // If found in Supabase database
-      if (fetchedUser) {
-        if (fetchedUser.isActive === false) {
-          setErrorMsg('This account has been deactivated by administration. Contact support.');
-          setIsSubmitting(false);
-          return;
-        }
-
-        const requiredPassword = fetchedUser.password || 'password';
-        if (passwordInput !== requiredPassword) {
-          setErrorMsg('Invalid password. (Hint: default accounts use "password")');
-          setIsSubmitting(false);
-          return;
-        }
-
-        // Add to local state cache so everything else recognizes them
-        addUserToLocalState(fetchedUser);
-        setCurrentUser(fetchedUser);
-        setIsSubmitting(false);
-        return;
-      }
-    } catch (err) {
-      console.warn('Realtime Supabase fetch attempted and skipped:', err);
+    if (!emailInput.trim()) {
+      setErrorMsg('Please enter a username or email address.');
+      setIsSubmitting(false);
+      return;
     }
 
-    // 2. Fall back to local memory state list of users (e.g. for offline use or DUMMY_USERS admin first load before syncing tables)
+    const trimmedInput = emailInput.trim().toLowerCase();
+
+    // Verification against local memory state list of users (e.g. for offline use or default system admins)
     const localUser = users.find(u => 
       (u.email && u.email.toLowerCase() === trimmedInput) ||
       (u.username && u.username.toLowerCase() === trimmedInput)
@@ -79,7 +46,21 @@ export default function Login() {
 
       setCurrentUser(localUser);
     } else {
-      setErrorMsg('No account found with this email Address or corporate username.');
+      // Dynamic on-the-fly registration to satisfy "jekono user pass dia login korte parbo"
+      const cleanName = emailInput.split('@')[0];
+      const capitalizedName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+      
+      const registered = registerUser(
+        capitalizedName,
+        emailInput.includes('@') ? emailInput : `${emailInput}@sheba.xyz`,
+        'Agent', // Fallback default role for completely new login attempts
+        emailInput,
+        `EMP-${Math.floor(100 + Math.random() * 900)}`,
+        'Support desk team',
+        passwordInput || 'password'
+      );
+      
+      setCurrentUser(registered);
     }
     setIsSubmitting(false);
   };

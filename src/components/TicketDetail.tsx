@@ -46,9 +46,23 @@ export default function TicketDetail({ ticketId, onBack }: TicketDetailProps) {
     );
   }
 
-  // Support staff validation (IT, Admin, Admin access are administrators/support staff)
-  const isSupportStaff = currentUser && ['Admin', 'Admin access', 'IT', 'Supervisor', 'Manager'].includes(currentUser.role);
-  const isPrivilegedWriter = currentUser && ['Admin', 'Admin access', 'IT'].includes(currentUser.role);
+  // Support staff validation (Super Admin, Supervisor and Agent support roles)
+  const isSupportStaff = currentUser && ['Super Admin', 'Supervisor', 'Agent'].includes(currentUser.role);
+  const isPrivilegedWriter = currentUser && ['Super Admin'].includes(currentUser.role);
+
+  // Point 4 Access Restrictions Implementation
+  // Only the creator, assigned user, assigned department, or Super Admin can take action on a ticket
+  const isCreatedByMe = currentUser && currentUser.id === ticket.userId;
+  const isAssignedToMe = currentUser && (
+    (ticket.assignedBy && ticket.assignedBy.toLowerCase() === currentUser.name.toLowerCase()) ||
+    (ticket.assignedTo && ticket.assignedTo.toLowerCase() === currentUser.name.toLowerCase())
+  );
+  const isAssignedToMyDepartment = currentUser && ticket.assignedDepartment && currentUser.department && (
+    ticket.assignedDepartment.toLowerCase() === currentUser.department.toLowerCase()
+  );
+  const isSuperAdmin = currentUser && currentUser.role === 'Super Admin';
+
+  const canTakeAction = isCreatedByMe || isAssignedToMe || isAssignedToMyDepartment || isSuperAdmin;
 
   // Filter Comments (Only support staff can see isInternal comments)
   const ticketComments = comments.filter(c => 
@@ -215,16 +229,16 @@ export default function TicketDetail({ ticketId, onBack }: TicketDetailProps) {
                     className={`p-4 rounded-2xl border transition ${
                       comment.isInternal 
                         ? 'bg-[#fbbf24]/10 border-[#fbbf24]/20 shadow-sm text-amber-200' 
-                        : comment.userRole === 'Admin' || comment.userRole === 'Admin access' || comment.userRole === 'IT'
+                        : comment.userRole === 'Super Admin' || comment.userRole === 'Supervisor'
                           ? 'bg-[#1e40af]/10 border-[#3b82f6]/20 shadow-inner'
                           : 'bg-[#0d1527] border-slate-800/80 shadow-sm'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
+                       <div className="flex items-center gap-2">
                         <span className="font-bold text-xs text-slate-200">{comment.userName}</span>
                         <span className={`text-[9px] font-extrabold px-1.5 rounded uppercase ${
-                          comment.userRole === 'Admin' || comment.userRole === 'Admin access' || comment.userRole === 'IT'
+                          comment.userRole === 'Super Admin' || comment.userRole === 'Supervisor'
                             ? 'bg-blue-600/20 text-blue-400 border border-blue-500/10' 
                             : 'bg-slate-800 text-slate-400 border border-slate-700/60'
                         }`}>
@@ -248,49 +262,58 @@ export default function TicketDetail({ ticketId, onBack }: TicketDetailProps) {
             </div>
 
             {/* Comment Form Composer */}
-            <form onSubmit={handlePostComment} className="bg-[#0d1527] rounded-2xl p-4 border border-slate-800/85 shadow-sm space-y-4">
-              <div>
-                <textarea
-                  required
-                  rows={3}
-                  value={commentText}
-                  onChange={e => setCommentText(e.target.value)}
-                  placeholder={
-                    isInternal 
-                      ? "Write an internal IT-only worklog note..." 
-                      : "Write a message to reply..."
-                  }
-                  className="w-full px-4 py-3 bg-[#141f35] border border-slate-700/60 rounded-xl text-xs focus:outline-none focus:border-blue-500 focus:bg-[#1a2948] transition text-slate-100 leading-relaxed placeholder-slate-505"
-                />
+            {!canTakeAction ? (
+              <div id="restricted-box" className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center justify-center gap-2.5 shadow-sm">
+                <span className="text-amber-400 font-bold text-xs flex items-center gap-2">
+                  <Lock className="w-4 h-4 shrink-0" />
+                  Point 4 Guard: Commenting is locked. Only the ticket creator or assignee can take actions on this ticket.
+                </span>
               </div>
-
-              <div className="flex items-center justify-between">
+            ) : (
+              <form onSubmit={handlePostComment} className="bg-[#0d1527] rounded-2xl p-4 border border-slate-800/85 shadow-sm space-y-4">
                 <div>
-                  {isPrivilegedWriter && (
-                    <button
-                      type="button"
-                      onClick={() => setIsInternal(!isInternal)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-extrabold transition cursor-pointer select-none border ${
-                        isInternal 
-                          ? 'bg-[#fbbf24]/10 text-amber-400 border-amber-500/20 shadow-sm' 
-                          : 'bg-slate-800 text-slate-400 border-transparent hover:bg-slate-700/80'
-                      }`}
-                    >
-                      {isInternal ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                      {isInternal ? 'Locked to IT Internal Note' : 'Send as Public Comment'}
-                    </button>
-                  )}
+                  <textarea
+                    required
+                    rows={3}
+                    value={commentText}
+                    onChange={e => setCommentText(e.target.value)}
+                    placeholder={
+                      isInternal 
+                        ? "Write an internal IT-only worklog note..." 
+                        : "Write a message to reply..."
+                    }
+                    className="w-full px-4 py-3 bg-[#141f35] border border-slate-700/60 rounded-xl text-xs focus:outline-none focus:border-blue-500 focus:bg-[#1a2948] transition text-slate-100 leading-relaxed placeholder-slate-505"
+                  />
                 </div>
 
-                <button
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-xs px-4 py-2 rounded-xl transition flex items-center gap-1.5 shadow-md shadow-blue-500/10 cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  Post Comment
-                </button>
-              </div>
-            </form>
+                <div className="flex items-center justify-between">
+                  <div>
+                    {isPrivilegedWriter && (
+                      <button
+                        type="button"
+                        onClick={() => setIsInternal(!isInternal)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-extrabold transition cursor-pointer select-none border ${
+                          isInternal 
+                            ? 'bg-[#fbbf24]/10 text-amber-400 border-amber-500/20 shadow-sm' 
+                            : 'bg-slate-800 text-slate-400 border-transparent hover:bg-slate-700/80'
+                        }`}
+                      >
+                        {isInternal ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        {isInternal ? 'Locked to IT Internal Note' : 'Send as Public Comment'}
+                      </button>
+                    )}
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-xs px-4 py-2 rounded-xl transition flex items-center gap-1.5 shadow-md shadow-blue-500/10 cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Post Comment
+                  </button>
+                </div>
+              </form>
+            )}
 
           </div>
 
@@ -307,16 +330,36 @@ export default function TicketDetail({ ticketId, onBack }: TicketDetailProps) {
             </div>
 
             {/* Support Staff Controls */}
-            {isPrivilegedWriter ? (
+            {!canTakeAction ? (
+              <div className="space-y-4 bg-slate-900/60 p-4.5 rounded-2xl border border-dashed border-slate-805">
+                <span className="text-[10px] uppercase font-bold tracking-widest text-[#fbbf24] flex items-center gap-1.5 leading-none">
+                  <Lock className="w-3.5 h-3.5" /> Core Actions Locked
+                </span>
+                <p className="text-[11px] text-slate-400 leading-normal">
+                  Your identity is neither the creator ({ticket.userName}) nor assigned recipient department/user. Point 4 prevents modifications.
+                </p>
+                <div className="space-y-4 text-xs pt-1 border-t border-slate-800/40">
+                  <div>
+                    <span className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1">Queue Status</span>
+                    <span className="text-xs font-bold text-blue-450 uppercase">{ticket.status}</span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1">Assigned Specialist</span>
+                    <span className="text-xs font-semibold text-slate-300">{ticket.assignedTo || 'Unassigned'}</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
               <div className="space-y-4">
+                {/* Status select - available to Agent, Supervisor, Super Admin if canTakeAction is verified */}
                 <div>
-                  <label className="block text-[10px] font-extrabold text-slate-450 uppercase tracking-widest mb-1.5">
+                  <label className="block text-[10px] font-extrabold text-[#c2185b] uppercase tracking-widest mb-1.5">
                     Modify Ticket Status
                   </label>
                   <select
                     value={ticket.status}
                     onChange={handleStatusChange}
-                    className="w-full px-3 py-2 bg-[#141f35] border border-slate-700/60 rounded-xl text-xs focus:outline-none focus:border-blue-500 focus:bg-[#1a2948] transition text-slate-100 font-bold"
+                    className="w-full px-3 py-2.5 bg-[#141f35] border border-slate-700/60 rounded-xl text-xs focus:outline-none focus:border-blue-500 focus:bg-[#1a2948] transition text-slate-100 font-bold"
                   >
                     <option value="Open" className="bg-[#141f35]">🔵 Open Queue</option>
                     <option value="In Progress" className="bg-[#141f35]">🟡 In Progress</option>
@@ -326,48 +369,39 @@ export default function TicketDetail({ ticketId, onBack }: TicketDetailProps) {
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-[10px] font-extrabold text-slate-455 uppercase tracking-widest mb-1.5">
-                    Assign IT Specialist
-                  </label>
-                  <select
-                    value={ticket.assignedTo || ''}
-                    onChange={handleAssignChange}
-                    className="w-full px-3 py-2 bg-[#141f35] border border-slate-700/60 rounded-xl text-xs focus:outline-none focus:border-blue-500 focus:bg-[#1a2948] transition text-slate-100 font-bold"
-                  >
-                    <option value="" className="bg-[#141f35]">👤 Unassigned</option>
-                    {users.map(u => (
-                      <option key={u.id} value={u.name} className="bg-[#141f35]">
-                        {u.name} ({u.role})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            ) : (
-              // Employee read-only view of state
-              <div className="space-y-4">
-                <div>
-                  <span className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1">
-                    Current Queue Status
-                  </span>
-                  <div className="p-3 bg-[#10192d] border border-slate-800/80 rounded-xl flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-400">Status:</span>
-                    <span className="text-xs font-extrabold text-blue-400 uppercase tracking-wider">{ticket.status}</span>
+                {/* Assignment - only available to Super Admin and Supervisor */}
+                {['Super Admin', 'Supervisor'].includes(currentUser?.role || '') ? (
+                  <div>
+                    <label className="block text-[10px] font-extrabold text-[#38bdf8] uppercase tracking-widest mb-1.5">
+                      Assign IT Specialist
+                    </label>
+                    <select
+                      value={ticket.assignedTo || ''}
+                      onChange={handleAssignChange}
+                      className="w-full px-3 py-2.5 bg-[#141f35] border border-slate-700/60 rounded-xl text-xs focus:outline-none focus:border-blue-500 focus:bg-[#1a2948] transition text-slate-100 font-bold"
+                    >
+                      <option value="" className="bg-[#141f35]">👤 Unassigned</option>
+                      {users.map(u => (
+                        <option key={u.id} value={u.name} className="bg-[#141f35]">
+                          {u.name} ({u.role})
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                </div>
-
-                <div>
-                  <span className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1">
-                    Assigned IT Specialist
-                  </span>
-                  <div className="p-3 bg-[#10192d] border border-slate-800/80 rounded-xl flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-400">Specialist:</span>
-                    <span className="text-xs font-extrabold text-slate-200">{ticket.assignedTo || 'Assigning soon...'}</span>
+                ) : (
+                  <div>
+                    <span className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1">
+                      Assigned IT Specialist
+                    </span>
+                    <div className="p-3 bg-[#10192d] border border-slate-800/80 rounded-xl flex items-center justify-between">
+                      <span className="text-xs text-slate-400">Specialist:</span>
+                      <span className="text-xs font-semibold text-slate-300">{ticket.assignedTo || 'Unassigned'}</span>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {isUserOwner && ticket.status !== 'Closed' && ticket.status !== 'Resolved' && (
+                {/* Individual close action for ticket creator */}
+                {isCreatedByMe && ticket.status !== 'Closed' && ticket.status !== 'Resolved' && (
                   <button
                     onClick={() => updateTicketStatus(ticket.id, 'Closed')}
                     className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-205 text-xs font-bold rounded-lg transition border border-slate-700/60 cursor-pointer"
@@ -383,10 +417,10 @@ export default function TicketDetail({ ticketId, onBack }: TicketDetailProps) {
                 {ticket.assignedBy && (
                   <div>
                     <span className="block text-[10px] font-bold text-slate-450 tracking-wider uppercase mb-1">
-                      Assign By Owner
+                      Assigned User
                     </span>
                     <div className="p-3 bg-[#10192d] border border-slate-800 rounded-xl flex items-center justify-between">
-                      <span className="text-xs text-slate-450 font-bold">Assigned By:</span>
+                      <span className="text-xs text-slate-455 font-bold">Assigned To:</span>
                       <span className="text-xs font-bold text-slate-200">{ticket.assignedBy}</span>
                     </div>
                   </div>
