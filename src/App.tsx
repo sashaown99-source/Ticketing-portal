@@ -320,7 +320,7 @@ function AppContent() {
               <img 
                 src="/src/assets/images/sheba_logo_1780297177657.png" 
                 alt="Sheba.xyz" 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain p-0.5"
                 referrerPolicy="no-referrer"
               />
             </div>
@@ -356,7 +356,7 @@ function AppContent() {
                 <img 
                   src="/src/assets/images/sheba_logo_1780297177657.png" 
                   alt="Sheba.xyz" 
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain p-0.5"
                   referrerPolicy="no-referrer"
                 />
               </div>
