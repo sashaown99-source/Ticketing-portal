@@ -155,8 +155,19 @@ export default function Dashboard({ onSelectTicket }: DashboardProps) {
       {/* KPI Numerical Counters Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         
-        <div className="bg-[#0d1527] rounded-2xl border border-slate-800/80 p-4 shadow-sm flex items-center gap-3">
-          <div className="p-3 bg-blue-600/15 text-blue-400 rounded-xl shrink-0">
+        <div 
+          onClick={() => {
+            setSearch('');
+            setCategoryFilter('All');
+            setPriorityFilter('All');
+            setStatusFilter('All');
+            setTimeout(() => {
+              document.getElementById('support-queue-registry-section')?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+          }}
+          className="bg-[#0d1527] rounded-2xl border border-slate-800/80 p-4 shadow-sm flex items-center gap-3 cursor-pointer hover:border-blue-500/50 hover:bg-[#111c33] transition-all duration-200 active:scale-[0.98] select-none group"
+        >
+          <div className="p-3 bg-blue-600/15 text-blue-400 rounded-xl shrink-0 group-hover:scale-110 transition-transform">
             <Inbox className="w-5 h-5" />
           </div>
           <div>
@@ -165,8 +176,17 @@ export default function Dashboard({ onSelectTicket }: DashboardProps) {
           </div>
         </div>
 
-        <div className="bg-[#0d1527] rounded-2xl border border-slate-800/80 p-4 shadow-sm flex items-center gap-3">
-          <div className="p-3 bg-indigo-600/15 text-indigo-400 rounded-xl shrink-0">
+        <div 
+          onClick={() => {
+            setPriorityFilter('All');
+            setStatusFilter('Open');
+            setTimeout(() => {
+              document.getElementById('support-queue-registry-section')?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+          }}
+          className="bg-[#0d1527] rounded-2xl border border-slate-800/80 p-4 shadow-sm flex items-center gap-3 cursor-pointer hover:border-indigo-500/50 hover:bg-[#111c33] transition-all duration-200 active:scale-[0.98] select-none group"
+        >
+          <div className="p-3 bg-indigo-600/15 text-indigo-400 rounded-xl shrink-0 group-hover:scale-110 transition-transform">
             <TrendingUp className="w-5 h-5" />
           </div>
           <div>
@@ -175,9 +195,18 @@ export default function Dashboard({ onSelectTicket }: DashboardProps) {
           </div>
         </div>
 
-        <div className="bg-[#0d1527] rounded-2xl border border-slate-800/80 p-4 shadow-sm flex items-center gap-3">
-          <div className="p-3 bg-[#eab308]/10 text-amber-400 rounded-xl shrink-0 border border-[#eab308]/10">
-            <Users className="w-5 h-5 animate-pulse" />
+        <div 
+          onClick={() => {
+            setPriorityFilter('All');
+            setStatusFilter('In Progress');
+            setTimeout(() => {
+              document.getElementById('support-queue-registry-section')?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+          }}
+          className="bg-[#0d1527] rounded-2xl border border-slate-800/80 p-4 shadow-sm flex items-center gap-3 cursor-pointer hover:border-amber-500/50 hover:bg-[#111c33] transition-all duration-200 active:scale-[0.98] select-none group"
+        >
+          <div className="p-3 bg-[#eab308]/10 text-amber-400 rounded-xl shrink-0 border border-[#eab308]/10 group-hover:scale-110 transition-transform">
+            <Users className="w-5 h-5" />
           </div>
           <div>
             <span className="text-[10px] font-bold text-slate-450 uppercase tracking-wider block">In Progress</span>
@@ -185,8 +214,17 @@ export default function Dashboard({ onSelectTicket }: DashboardProps) {
           </div>
         </div>
 
-        <div className="bg-[#0d1527] rounded-2xl border border-slate-800/80 p-4 shadow-sm flex items-center gap-3">
-          <div className="p-3 bg-emerald-600/15 text-emerald-400 rounded-xl shrink-0">
+        <div 
+          onClick={() => {
+            setPriorityFilter('All');
+            setStatusFilter('Closed');
+            setTimeout(() => {
+              document.getElementById('support-queue-registry-section')?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+          }}
+          className="bg-[#0d1527] rounded-2xl border border-slate-800/80 p-4 shadow-sm flex items-center gap-3 cursor-pointer hover:border-emerald-500/50 hover:bg-[#111c33] transition-all duration-200 active:scale-[0.98] select-none group"
+        >
+          <div className="p-3 bg-emerald-600/15 text-emerald-400 rounded-xl shrink-0 group-hover:scale-110 transition-transform">
             <CheckCircle className="w-5 h-5" />
           </div>
           <div>
@@ -195,9 +233,18 @@ export default function Dashboard({ onSelectTicket }: DashboardProps) {
           </div>
         </div>
 
-        <div className="bg-[#0d1527] rounded-2xl border border-slate-800/80 p-4 shadow-sm flex items-center gap-3 col-span-2 lg:col-span-1">
-          <div className={`p-3 rounded-xl shrink-0 ${stats.urgent > 0 ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-slate-800/60 text-slate-500'}`}>
-            <AlertTriangle className={`w-5 h-5 ${stats.urgent > 0 ? 'animate-bounce' : ''}`} />
+        <div 
+          onClick={() => {
+            setPriorityFilter('Urgent');
+            setStatusFilter('All');
+            setTimeout(() => {
+              document.getElementById('support-queue-registry-section')?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+          }}
+          className="bg-[#0d1527] rounded-2xl border border-slate-800/80 p-4 shadow-sm flex items-center gap-3 col-span-2 lg:col-span-1 cursor-pointer hover:border-rose-500/50 hover:bg-[#111c33] transition-all duration-200 active:scale-[0.98] select-none group"
+        >
+          <div className={`p-3 rounded-xl shrink-0 group-hover:scale-110 transition-transform ${stats.urgent > 0 ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-slate-800/60 text-slate-500'}`}>
+            <AlertTriangle className={`w-5 h-5 ${stats.urgent > 0 ? 'animate-pulse' : ''}`} />
           </div>
           <div>
             <span className="text-[10px] font-bold text-slate-450 uppercase tracking-wider block">Active Urgent</span>
@@ -264,7 +311,7 @@ export default function Dashboard({ onSelectTicket }: DashboardProps) {
       </div>
 
       {/* Filter and Search controls */}
-      <div className="bg-[#0d1527] rounded-2xl border border-slate-800/80 shadow-sm p-4 space-y-4">
+      <div id="support-queue-registry-section" className="scroll-mt-6 bg-[#0d1527] rounded-2xl border border-slate-800/80 shadow-sm p-4 space-y-4">
         <div className="grid md:grid-cols-12 gap-3">
           {/* Search bar */}
           <div className="md:col-span-6 relative">

@@ -18,12 +18,15 @@ import {
   Menu, 
   X, 
   ChevronRight, 
+  ChevronDown,
+  Settings,
   TicketCheck, 
   HelpCircle,
   Eye,
   RefreshCw,
   Users,
   User,
+  UserPlus,
   Cloud,
   Database,
   Sun,
@@ -46,6 +49,7 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [adminMenuOpen, setAdminMenuOpen] = useState(true);
   const [sqlCopied, setSqlCopied] = useState(false);
   const [isDark, setIsDark] = useState<boolean>(() => {
     try {
@@ -91,6 +95,13 @@ function AppContent() {
     }
   }, [users, currentUser, setCurrentUser]);
 
+  // Expand Admin Panel if any of its sub-items are active
+  useEffect(() => {
+    if (activeTab === 'user_management' || activeTab === 'user_list') {
+      setAdminMenuOpen(true);
+    }
+  }, [activeTab]);
+
   if (!currentUser) {
     return <Login />;
   }
@@ -111,7 +122,7 @@ function AppContent() {
       <style>{`
         /* Custom highly crafted light mode styles */
         .light-mode {
-          background-color: #f1f5f9 !important;
+          background-color: #f8fafc !important;
           color: #0f172a !important;
         }
         
@@ -122,6 +133,7 @@ function AppContent() {
           background-color: #ffffff !important;
           border-color: #e2e8f0 !important;
           color: #0f172a !important;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
         }
         
         .light-mode aside button {
@@ -139,13 +151,13 @@ function AppContent() {
           border-color: #bfdbfe !important;
         }
         
-        .light-mode .text-slate-100 {
+        .light-mode .text-slate-100, .light-mode .text-slate-105 {
           color: #0f172a !important;
         }
         .light-mode .text-slate-200 {
           color: #1e293b !important;
         }
-        .light-mode .text-slate-300 {
+        .light-mode .text-slate-300, .light-mode .text-slate-350 {
           color: #334155 !important;
         }
         .light-mode .text-slate-400 {
@@ -154,15 +166,53 @@ function AppContent() {
         .light-mode .text-slate-450 {
           color: #5d6b7e !important;
         }
+        .light-mode .text-slate-500 {
+          color: #64748b !important;
+        }
+        
+        /* Interactive text overrides for dark labels */
+        .light-mode .text-blue-400 {
+          color: #1d4ed8 !important;
+        }
+        .light-mode .text-emerald-400 {
+          color: #047857 !important;
+        }
+        .light-mode .text-rose-455,
+        .light-mode .text-rose-400 {
+          color: #b91c1c !important;
+        }
+        .light-mode .text-amber-400 {
+          color: #b45309 !important;
+        }
+        .light-mode .text-indigo-400 {
+          color: #4338ca !important;
+        }
+        .light-mode .text-purple-400 {
+          color: #6d28d9 !important;
+        }
         
         .light-mode .bg-\[\#141f35\],
         .light-mode .bg-\[\#111a2f\],
         .light-mode .bg-slate-900,
         .light-mode .bg-\[\#121c33\]\/70,
-        .light-mode .bg-\[\#121c33\] {
-          background-color: #f8fafc !important;
+        .light-mode .bg-\[\#121c33\],
+        .light-mode .bg-\[\#142038\],
+        .light-mode .bg-\[\#0b1329\],
+        .light-mode .bg-\[\#090d16\] {
+          background-color: #f1f5f9 !important;
           border-color: #cbd5e1 !important;
           color: #0f172a !important;
+        }
+        
+        /* Modal and editing block specific content boxes */
+        .light-mode .bg-\[\#0b1329\] {
+          background-color: #ffffff !important;
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+        }
+        
+        .light-mode .bg-\[\#121a30\] {
+          background-color: #fffbeb !important;
+          border-color: #fef08a !important;
         }
         
         .light-mode select,
@@ -182,7 +232,7 @@ function AppContent() {
         .light-mode .border-slate-800\/80,
         .light-mode .border-slate-700\/60,
         .light-mode .border-slate-850 {
-          border-color: #cbd5e1 !important;
+          border-color: #e2e8f0 !important;
         }
         
         .light-mode table thead tr {
@@ -202,6 +252,62 @@ function AppContent() {
         .light-mode .bg-\[\#1e1b4b\]\/60 {
           background-color: #faf5ff !important;
           border-color: #e9d5ff !important;
+        }
+        
+        /* Badge style enhancements */
+        .light-mode .bg-blue-600\/15 {
+          background-color: #eff6ff !important;
+          color: #2563eb !important;
+        }
+        .light-mode .bg-indigo-600\/15 {
+          background-color: #eef2ff !important;
+          color: #4f46e5 !important;
+        }
+        .light-mode .bg-emerald-600\/15 {
+          background-color: #ecfdf5 !important;
+          color: #059669 !important;
+        }
+        .light-mode .bg-rose-500\/10 {
+          background-color: #fff1f2 !important;
+          color: #e11d48 !important;
+          border-color: #fecdd3 !important;
+        }
+        .light-mode .bg-\[\#eab308\]\/10 {
+          background-color: #fef9c3 !important;
+          color: #d97706 !important;
+          border-color: #fef08a !important;
+        }
+        .light-mode .bg-[#eab308]/10 {
+          background-color: #fef9c3 !important;
+          color: #d97706 !important;
+          border-color: #fef08a !important;
+        }
+        .light-mode .bg-emerald-600\/10 {
+          background-color: #ecfdf5 !important;
+          border-color: #a7f3d0 !important;
+          color: #047857 !important;
+        }
+        .light-mode .bg-emerald-600\/20 {
+          background-color: #d1fae5 !important;
+        }
+        
+        .light-mode .hover\:bg-\[\#111c33\]:hover {
+          background-color: #f8fafc !important;
+        }
+        .light-mode .hover\:bg-\[\#111c33\]:hover {
+          background-color: #f8fafc !important;
+        }
+        
+        /* Premium custom scrollbar overrides */
+        .light-mode ::-webkit-scrollbar-track {
+          background: #f1f5f9 !important;
+        }
+        .light-mode ::-webkit-scrollbar-thumb {
+          background: #cbd5e1 !important;
+          border-radius: 9999px !important;
+        }
+        .light-mode ::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8 !important;
         }
       `}</style>
       
@@ -261,73 +367,94 @@ function AppContent() {
             </div>
 
             {/* Nav Menu */}
-            <nav className="space-y-1 pt-4 border-t border-slate-800">
+            <nav className="space-y-4 pt-4 border-t border-slate-800">
               
-              <button
-                onClick={() => { setActiveTab('dashboard'); setMobileMenuOpen(false); }}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition cursor-pointer ${
-                  activeTab === 'dashboard'
-                    ? 'bg-blue-600/15 text-blue-400 font-bold border border-blue-500/20 bg-blue-500/5' 
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
-                }`}
-              >
-                <LayoutDashboard className="w-4 h-4 shrink-0 text-slate-400 group-hover:text-blue-400" />
-                Performance Dashboard
-              </button>
-
-              {currentUser.role === 'Super Admin' && (
+              <div className="space-y-1">
                 <button
-                  onClick={() => { setActiveTab('user_management'); setMobileMenuOpen(false); }}
+                  onClick={() => { setActiveTab('dashboard'); setMobileMenuOpen(false); }}
                   className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition cursor-pointer ${
-                    activeTab === 'user_management'
+                    activeTab === 'dashboard'
                       ? 'bg-blue-600/15 text-blue-400 font-bold border border-blue-500/20 bg-blue-500/5' 
                       : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
                   }`}
                 >
-                  <Users className="w-4 h-4 shrink-0 text-slate-400 group-hover:text-blue-400" />
-                  Create a New User
+                  <LayoutDashboard className="w-4 h-4 shrink-0 text-slate-400 group-hover:text-blue-400" />
+                  Performance Dashboard
                 </button>
-              )}
 
-              <button
-                onClick={() => { setActiveTab('my_tickets'); setMobileMenuOpen(false); }}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition cursor-pointer ${
-                  activeTab === 'my_tickets'
-                    ? 'bg-blue-600/15 text-blue-400 font-bold border border-blue-500/20 bg-blue-500/5' 
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
-                }`}
-              >
-                <TicketCheck className="w-4 h-4 shrink-0 text-slate-400" />
-                Role Ticket Queue
-              </button>
-
-              {currentUser.role !== 'Agent' && (
                 <button
-                  onClick={() => { setActiveTab('user_list'); setMobileMenuOpen(false); }}
+                  onClick={() => { setActiveTab('create_ticket'); setMobileMenuOpen(false); }}
                   className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition cursor-pointer ${
-                    activeTab === 'user_list'
+                    activeTab === 'create_ticket'
                       ? 'bg-blue-600/15 text-blue-400 font-bold border border-blue-500/20 bg-blue-500/5' 
                       : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
                   }`}
                 >
-                  <Users className="w-4 h-4 shrink-0 text-slate-400" />
-                  User List
+                  <PlusCircle className="w-4 h-4 shrink-0 text-slate-400" />
+                  Create a New Ticket
                 </button>
+
+                <button
+                  onClick={() => { setActiveTab('my_tickets'); setMobileMenuOpen(false); }}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition cursor-pointer ${
+                    activeTab === 'my_tickets'
+                      ? 'bg-blue-600/15 text-blue-400 font-bold border border-blue-500/20 bg-blue-500/5' 
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+                  }`}
+                >
+                  <TicketCheck className="w-4 h-4 shrink-0 text-slate-400" />
+                  Role Ticket Queue
+                </button>
+              </div>
+
+              {(currentUser.role === 'Super Admin' || currentUser.role === 'Supervisor') && (
+                <div className="space-y-1.5 pt-3 border-t border-slate-800/60">
+                  <button
+                    onClick={() => setAdminMenuOpen(!adminMenuOpen)}
+                    className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-between text-slate-400 hover:text-white hover:bg-slate-800/20 transition cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Settings className="w-4 h-4 text-blue-500/80 shrink-0" />
+                      <span>Admin Panel</span>
+                    </div>
+                    {adminMenuOpen ? (
+                      <ChevronDown className="w-3.5 h-3.5 text-slate-500 transition-transform" />
+                    ) : (
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-500 transition-transform" />
+                    )}
+                  </button>
+
+                  {adminMenuOpen && (
+                    <div className="space-y-1 pl-2.5 border-l-2 border-slate-800/40 ml-5 mt-1">
+                      {currentUser.role === 'Super Admin' && (
+                        <button
+                          onClick={() => { setActiveTab('user_management'); setMobileMenuOpen(false); }}
+                          className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition cursor-pointer ${
+                            activeTab === 'user_management'
+                              ? 'bg-blue-600/15 text-blue-400 font-bold border border-blue-500/20 bg-blue-500/5' 
+                              : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+                          }`}
+                        >
+                          <UserPlus className="w-4 h-4 shrink-0 text-slate-400 group-hover:text-blue-400" />
+                          Create a New User
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => { setActiveTab('user_list'); setMobileMenuOpen(false); }}
+                        className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition cursor-pointer ${
+                          activeTab === 'user_list'
+                            ? 'bg-blue-600/15 text-blue-400 font-bold border border-blue-500/20 bg-blue-500/5' 
+                            : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+                        }`}
+                      >
+                        <Users className="w-4 h-4 shrink-0 text-slate-400" />
+                        User List
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
-
-              <button
-                onClick={() => { setActiveTab('create_ticket'); setMobileMenuOpen(false); }}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition cursor-pointer ${
-                  activeTab === 'create_ticket'
-                    ? 'bg-blue-600/15 text-blue-400 font-bold border border-blue-500/20 bg-blue-500/5' 
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
-                }`}
-              >
-                <PlusCircle className="w-4 h-4 shrink-0 text-slate-400" />
-                Create a New Ticket
-              </button>
-
-
 
             </nav>
           </div>
