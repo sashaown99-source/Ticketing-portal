@@ -10,9 +10,10 @@ const ROLE_DETAILS: Record<Role, { label: string; badgeStyle: string; icon: stri
 };
 
 export default function UserList() {
-  const { users, updateUser } = useApp();
+  const { users, updateUser, currentUser } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   // State for active edit target
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -41,7 +42,12 @@ export default function UserList() {
     
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
 
-    return matchesSearch && matchesRole;
+    const matchesStatus = 
+      statusFilter === 'all' || 
+      (statusFilter === 'active' && user.isActive !== false) || 
+      (statusFilter === 'inactive' && user.isActive === false);
+
+    return matchesSearch && matchesRole && matchesStatus;
   });
 
   const totalActive = users.filter(u => u.isActive !== false).length;
@@ -149,16 +155,27 @@ export default function UserList() {
             className="w-full bg-[#111a2f] border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-blue-500 text-slate-100 font-semibold"
           />
         </div>
-        <div className="w-full md:w-56">
+        <div className="w-full md:w-48">
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="w-full bg-[#111a2f] border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-500 text-slate-100 font-bold"
+            className="w-full bg-[#111a2f] border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-500 text-slate-100 font-bold cursor-pointer"
           >
-            <option value="all">📁 All Roles / Departments</option>
+            <option value="all">📁 All Roles / Depts</option>
             <option value="Agent">📞 Support Agent</option>
             <option value="Supervisor">⚡ Supervisor</option>
             <option value="Super Admin">👑 Super Admin</option>
+          </select>
+        </div>
+        <div className="w-full md:w-44">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full bg-[#111a2f] border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-500 text-slate-100 font-bold cursor-pointer"
+          >
+            <option value="all">⚙️ All Statuses</option>
+            <option value="active">🟢 Active Only</option>
+            <option value="inactive">🔴 Inactive Only</option>
           </select>
         </div>
       </div>
@@ -227,7 +244,7 @@ export default function UserList() {
                 </div>
 
                 {/* Footer Account Status & Edit profile button */}
-                <div className="mt-4 pt-3 border-t border-slate-800/30 flex items-center justify-between gap-4">
+                <div className="mt-4 pt-3 border-t border-slate-800/30 flex items-center justify-between gap-2">
                   <div className="text-[10px] font-bold text-slate-450 flex flex-col">
                     <span className="text-[8px] uppercase tracking-wide">SYSTEM STATUS:</span>
                     {isActive ? (
@@ -236,13 +253,45 @@ export default function UserList() {
                       <span className="text-rose-400 uppercase">Disabled</span>
                     )}
                   </div>
-                  <button
-                    onClick={() => handleStartEdit(user)}
-                    className="px-2.5 py-1.5 bg-[#141f35] border border-slate-700/60 rounded-xl text-[10px] font-bold text-blue-400 hover:text-white hover:bg-blue-600 hover:border-blue-500 transition cursor-pointer flex items-center gap-1 shrink-0"
-                  >
-                    <Edit className="w-3 h-3" />
-                    Edit User
-                  </button>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {/* Direct Status Toggle (Deactivate / Activate Option) */}
+                    {user.email !== 'sashaown99@gmail.com' && currentUser?.id !== user.id && (
+                      <button
+                        onClick={() => {
+                          const conf = window.confirm(`Are you sure you want to change the status of ${user.name} to ${isActive ? 'Inactive' : 'Active'}?`);
+                          if (conf) {
+                            updateUser(
+                              user.id,
+                              user.name,
+                              user.email,
+                              user.role,
+                              user.username || '',
+                              user.employeeId || '',
+                              user.department || '',
+                              user.password || '',
+                              !isActive
+                            );
+                          }
+                        }}
+                        className={`px-2 py-1 rounded-lg text-[9px] font-bold transition cursor-pointer border ${
+                          isActive 
+                            ? 'bg-rose-500/10 text-rose-400 border-rose-500/15 hover:bg-rose-550 hover:text-white hover:border-rose-500' 
+                            : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/15 hover:bg-emerald-550 hover:text-white hover:border-emerald-500'
+                        }`}
+                        title={isActive ? 'Deactivate user' : 'Activate user'}
+                      >
+                        {isActive ? 'Deactivate' : 'Activate'}
+                      </button>
+                    )}
+                    
+                    <button
+                      onClick={() => handleStartEdit(user)}
+                      className="px-2 py-1 bg-[#141f35] border border-slate-700/60 rounded-lg text-[9px] font-bold text-blue-400 hover:text-white hover:bg-blue-600 hover:border-blue-500 transition cursor-pointer flex items-center gap-1 shrink-0"
+                    >
+                      <Edit className="w-3 h-3" />
+                      Edit
+                    </button>
+                  </div>
                 </div>
               </div>
             );

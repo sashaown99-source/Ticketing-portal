@@ -122,183 +122,168 @@ function AppContent() {
       <style>{`
         /* Custom highly crafted light mode styles */
         .light-mode {
-          background-color: #f8fafc !important;
-          color: #0f172a !important;
-        }
-        
-        .light-mode header,
-        .light-mode aside,
-        .light-mode .bg-\[\#0d1527\],
-        .light-mode .bg-\[\#0d1527\]\/80 {
-          background-color: #ffffff !important;
-          border-color: #e2e8f0 !important;
-          color: #0f172a !important;
-          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
-        }
-        
-        .light-mode aside button {
-          color: #475569 !important;
-        }
-        
-        .light-mode aside button:hover {
           background-color: #f1f5f9 !important;
           color: #0f172a !important;
         }
         
+        /* Base page wrapper background (soft grey) */
+        .light-mode [class*="bg-[#060a13]"],
+        .light-mode [class*="bg-[#090d16]"] {
+          background-color: #f1f5f9 !important;
+          color: #0f172a !important;
+        }
+
+        /* Large panels, cards, header, and sidebar (clean white cards) */
+        .light-mode header,
+        .light-mode aside,
+        .light-mode [class*="bg-[#0d1527]"],
+        .light-mode [class*="bg-[#0e1220]"],
+        .light-mode [class*="bg-[#0b1329]"],
+        .light-mode [class*="bg-slate-900"],
+        .light-mode .card,
+        .light-mode .bg-card {
+          background-color: #ffffff !important;
+          border-color: #cbd5e1 !important;
+          color: #0f172a !important;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.025) !important;
+        }
+
+        /* Form elements, inputs, search inputs, dropdown select filters (white background with nice borders) */
+        .light-mode select,
+        .light-mode input,
+        .light-mode textarea,
+        .light-mode [class*="bg-[#111a2f]"] {
+          background-color: #ffffff !important;
+          border-color: #cbd5e1 !important;
+          color: #0f172a !important;
+        }
+
+        .light-mode select option {
+          background-color: #ffffff !important;
+          color: #0f172a !important;
+        }
+
+        /* Sidebar buttons and navigation in light mode */
+        .light-mode aside button {
+          color: #334155 !important;
+        }
+
+        .light-mode aside button:hover {
+          background-color: #f1f5f9 !important;
+          color: #0f172a !important;
+        }
+
         .light-mode aside button[class*="bg-blue-600"] {
           background-color: rgba(37, 99, 235, 0.1) !important;
           color: #2563eb !important;
           border-color: #bfdbfe !important;
         }
-        
-        .light-mode .text-slate-100, .light-mode .text-slate-105 {
-          color: #0f172a !important;
-        }
-        .light-mode .text-slate-200 {
+
+        /* Text colors overrides for slate tags */
+        .light-mode .text-slate-100 { color: #0f172a !important; }
+        .light-mode .text-slate-200 { color: #1e293b !important; }
+        .light-mode .text-slate-300 { color: #334155 !important; }
+        .light-mode .text-slate-350 { color: #334155 !important; }
+        .light-mode .text-slate-400 { color: #475569 !important; }
+        .light-mode .text-slate-450 { color: #475569 !important; }
+        .light-mode .text-slate-455 { color: #475569 !important; }
+        .light-mode .text-slate-500 { color: #64748b !important; }
+
+        /* General text fields and lists should have dark primary slate content */
+        .light-mode .text-xs,
+        .light-mode .text-sm,
+        .light-mode h1,
+        .light-mode h2,
+        .light-mode h3,
+        .light-mode h4,
+        .light-mode h5,
+        .light-mode h6 {
           color: #1e293b !important;
         }
-        .light-mode .text-slate-300, .light-mode .text-slate-350 {
-          color: #334155 !important;
-        }
-        .light-mode .text-slate-400 {
+        
+        .light-mode p,
+        .light-mode .text-slate-400,
+        .light-mode .text-slate-450,
+        .light-mode .text-slate-500 {
           color: #475569 !important;
         }
-        .light-mode .text-slate-450 {
-          color: #5d6b7e !important;
-        }
-        .light-mode .text-slate-500 {
-          color: #64748b !important;
-        }
-        
-        /* Interactive text overrides for dark labels */
-        .light-mode .text-blue-400 {
-          color: #1d4ed8 !important;
-        }
-        .light-mode .text-emerald-400 {
-          color: #047857 !important;
-        }
-        .light-mode .text-rose-455,
-        .light-mode .text-rose-400 {
-          color: #b91c1c !important;
-        }
-        .light-mode .text-amber-400 {
-          color: #b45309 !important;
-        }
-        .light-mode .text-indigo-400 {
-          color: #4338ca !important;
-        }
-        .light-mode .text-purple-400 {
-          color: #6d28d9 !important;
-        }
-        
-        .light-mode .bg-\[\#141f35\],
-        .light-mode .bg-\[\#111a2f\],
-        .light-mode .bg-slate-900,
-        .light-mode .bg-\[\#121c33\]\/70,
-        .light-mode .bg-\[\#121c33\],
-        .light-mode .bg-\[\#142038\],
-        .light-mode .bg-\[\#0b1329\],
-        .light-mode .bg-\[\#090d16\] {
+
+        /* Interactive status badges & text alerts inside light mode */
+        .light-mode .text-blue-400 { color: #1d4ed8 !important; }
+        .light-mode .text-emerald-400,
+        .light-mode .text-emerald-300 { color: #047857 !important; }
+        .light-mode .text-rose-400,
+        .light-mode .text-rose-455 { color: #b91c1c !important; }
+        .light-mode .text-amber-400 { color: #b45309 !important; }
+        .light-mode .text-indigo-400 { color: #4338ca !important; }
+        .light-mode .text-purple-400 { color: #6d28d9 !important; }
+
+        /* Tables & Row blocks backgrounds and scroll highlights */
+        .light-mode [class*="bg-[#121c33]"] {
           background-color: #f1f5f9 !important;
           border-color: #cbd5e1 !important;
-          color: #0f172a !important;
+          color: #334155 !important;
         }
-        
-        /* Modal and editing block specific content boxes */
-        .light-mode .bg-\[\#0b1329\] {
-          background-color: #ffffff !important;
-          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-        }
-        
-        .light-mode .bg-\[\#121a30\] {
-          background-color: #fffbeb !important;
-          border-color: #fef08a !important;
-        }
-        
-        .light-mode select,
-        .light-mode input,
-        .light-mode textarea {
-          background-color: #ffffff !important;
-          border-color: #cbd5e1 !important;
-          color: #0f172a !important;
-        }
-        
-        .light-mode select option {
-          background-color: #ffffff !important;
-          color: #0f172a !important;
-        }
-        
-        .light-mode .border-slate-800,
-        .light-mode .border-slate-800\/80,
-        .light-mode .border-slate-700\/60,
-        .light-mode .border-slate-850 {
-          border-color: #e2e8f0 !important;
-        }
-        
+
         .light-mode table thead tr {
           background-color: #f1f5f9 !important;
           color: #334155 !important;
         }
-        
-        .light-mode table tbody tr:hover {
+
+        .light-mode table tbody tr:hover,
+        .light-mode [class*="hover:bg-[#111c33]"]:hover,
+        .light-mode [class*="hover:bg-slate-800"]:hover {
           background-color: #f8fafc !important;
+          color: #0f172a !important;
         }
-        
-        .light-mode .bg-\[\#1c2e4a\]\/60 {
+
+        /* Specific support categories, feedback or blueprint widgets */
+        .light-mode [class*="bg-[#141f35]"],
+        .light-mode [class*="bg-[#121a30]"] {
+          background-color: #f8fafc !important;
+          border-color: #cbd5e1 !important;
+          color: #0f172a !important;
+        }
+
+        .light-mode .bg-[#eab308]/10,
+        .light-mode [class*="bg-[#eab308]/10"] {
+          background-color: #fef9c3 !important;
+          color: #d97706 !important;
+          border-color: #fef08a !important;
+        }
+
+        .light-mode .bg-emerald-600/15,
+        .light-mode .bg-emerald-500/10,
+        .light-mode [class*="bg-emerald-600"] {
+          background-color: #ecfdf5 !important;
+          color: #047857 !important;
+          border-color: #a7f3d0 !important;
+        }
+
+        .light-mode [class*="bg-[#1c2e4a]"] {
           background-color: #eff6ff !important;
           border-color: #bfdbfe !important;
+          color: #1e3a8a !important;
         }
-        
-        .light-mode .bg-\[\#1e1b4b\]\/60 {
+
+        .light-mode [class*="bg-[#1e1b4b]"] {
           background-color: #faf5ff !important;
           border-color: #e9d5ff !important;
+          color: #581c87 !important;
         }
-        
-        /* Badge style enhancements */
-        .light-mode .bg-blue-600\/15 {
-          background-color: #eff6ff !important;
-          color: #2563eb !important;
+
+        /* General Border adjustments for grid tables and rows */
+        .light-mode [class*="border-slate-800"],
+        .light-mode [class*="border-slate-700"],
+        .light-mode [class*="border-slate-850"] {
+          border-color: #cbd5e1 !important;
         }
-        .light-mode .bg-indigo-600\/15 {
-          background-color: #eef2ff !important;
-          color: #4f46e5 !important;
+
+        .light-mode .text-slate-105 {
+          color: #0f172a !important;
         }
-        .light-mode .bg-emerald-600\/15 {
-          background-color: #ecfdf5 !important;
-          color: #059669 !important;
-        }
-        .light-mode .bg-rose-500\/10 {
-          background-color: #fff1f2 !important;
-          color: #e11d48 !important;
-          border-color: #fecdd3 !important;
-        }
-        .light-mode .bg-\[\#eab308\]\/10 {
-          background-color: #fef9c3 !important;
-          color: #d97706 !important;
-          border-color: #fef08a !important;
-        }
-        .light-mode .bg-[#eab308]/10 {
-          background-color: #fef9c3 !important;
-          color: #d97706 !important;
-          border-color: #fef08a !important;
-        }
-        .light-mode .bg-emerald-600\/10 {
-          background-color: #ecfdf5 !important;
-          border-color: #a7f3d0 !important;
-          color: #047857 !important;
-        }
-        .light-mode .bg-emerald-600\/20 {
-          background-color: #d1fae5 !important;
-        }
-        
-        .light-mode .hover\:bg-\[\#111c33\]:hover {
-          background-color: #f8fafc !important;
-        }
-        .light-mode .hover\:bg-\[\#111c33\]:hover {
-          background-color: #f8fafc !important;
-        }
-        
-        /* Premium custom scrollbar overrides */
+
+        /* Custom scrollbar color schemes in light mode */
         .light-mode ::-webkit-scrollbar-track {
           background: #f1f5f9 !important;
         }
