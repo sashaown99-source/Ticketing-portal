@@ -713,13 +713,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return tickets;
     }
 
-    // Supervisor only gets tickets within their specific department
+    // Supervisor gets tickets in their department, or explicitly assigned to them, or created by them
     if (currentUser.role === 'Supervisor') {
       return tickets.filter(t => {
         const creator = users.find(u => u.id === t.userId);
         const supervisorDept = currentUser.department?.trim().toLowerCase();
         const creatorDept = creator?.department?.trim().toLowerCase();
-        return supervisorDept && creatorDept === supervisorDept;
+        const isDeptMatch = supervisorDept && creatorDept === supervisorDept;
+        const isExplicitAssignee = (t.assignedTo && currentUser.name && (t.assignedTo.toLowerCase() === currentUser.name.toLowerCase())) || 
+                                    (t.assignedBy && currentUser.name && (t.assignedBy.toLowerCase() === currentUser.name.toLowerCase()));
+        const isOwner = t.userId === currentUser.id;
+        const isDeptAssigned = t.assignedDepartment && supervisorDept && (t.assignedDepartment.toLowerCase() === supervisorDept);
+        return isDeptMatch || isExplicitAssignee || isOwner || isDeptAssigned;
       });
     }
     

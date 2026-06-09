@@ -14,12 +14,21 @@ export default function UserPortal({ onSelectTicket, onOpenCreate }: UserPortalP
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [priorityFilter, setPriorityFilter] = useState<string>('All');
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
+  const [queueFilter, setQueueFilter] = useState<'all' | 'assigned'>('all');
 
   // Let whoever is given a specific role work with their related tickets (which are pre-filtered in AppContext)
   const myTickets = tickets;
 
   // Apply filters
   const filteredTickets = myTickets.filter(t => {
+    // Check if explicitly assigned to the logged in user
+    const isAssignedToMe = (t.assignedTo && currentUser?.name && t.assignedTo.toLowerCase() === currentUser.name.toLowerCase()) || 
+                           (t.assignedBy && currentUser?.name && t.assignedBy.toLowerCase() === currentUser.name.toLowerCase());
+    
+    if (queueFilter === 'assigned' && !isAssignedToMe) {
+      return false;
+    }
+
     const matchesSearch = t.subject.toLowerCase().includes(search.toLowerCase()) || 
                           t.description.toLowerCase().includes(search.toLowerCase()) ||
                           t.id.toLowerCase().includes(search.toLowerCase());
@@ -72,11 +81,15 @@ export default function UserPortal({ onSelectTicket, onOpenCreate }: UserPortalP
     document.body.removeChild(link);
   };
 
-  // Calculate Employee-specific Stats
+  // Stats dynamically reflect selected queue filter category
+  const activeQueueTickets = queueFilter === 'assigned'
+    ? myTickets.filter(t => (t.assignedTo && currentUser?.name && t.assignedTo.toLowerCase() === currentUser.name.toLowerCase()) || (t.assignedBy && currentUser?.name && t.assignedBy.toLowerCase() === currentUser.name.toLowerCase()))
+    : myTickets;
+
   const stats = {
-    total: myTickets.length,
-    active: myTickets.filter(t => ['Open', 'In Progress', 'On Hold'].includes(t.status)).length,
-    resolved: myTickets.filter(t => t.status === 'Resolved' || t.status === 'Closed').length
+    total: activeQueueTickets.length,
+    active: activeQueueTickets.filter(t => ['Open', 'In Progress', 'On Hold'].includes(t.status)).length,
+    resolved: activeQueueTickets.filter(t => t.status === 'Resolved' || t.status === 'Closed').length
   };
 
   const getStatusStyle = (status: TicketStatus) => {
@@ -121,6 +134,38 @@ export default function UserPortal({ onSelectTicket, onOpenCreate }: UserPortalP
           >
             <PlusCircle className="w-4 h-4" />
             Create a New Ticket
+          </button>
+        </div>
+      </div>
+
+      {/* Queue Filter Segment Controls - "Assign to me" and "All tickets" */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-[#0d1527] rounded-2xl border border-slate-800/80 p-5 shadow-sm">
+        <div className="flex flex-col">
+          <span className="text-xs font-bold text-slate-100 uppercase tracking-wider">Queue Focus Overview</span>
+          <span className="text-[10px] text-slate-400 mt-0.5">Filter between tickets assigned to you or the entire role matching queue.</span>
+        </div>
+        <div className="flex items-center gap-1.5 p-1 bg-[#121c33] border border-slate-800/60 rounded-xl self-start sm:self-auto w-full sm:w-auto">
+          <button
+            id="btn-queue-assigned"
+            onClick={() => setQueueFilter('assigned')}
+            className={`flex-1 sm:flex-initial cursor-pointer px-4 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+              queueFilter === 'assigned'
+                ? 'bg-blue-600 text-white shadow-md font-extrabold'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+            }`}
+          >
+            👤 Assign to me ({myTickets.filter(t => (t.assignedTo && currentUser?.name && t.assignedTo.toLowerCase() === currentUser.name.toLowerCase()) || (t.assignedBy && currentUser?.name && t.assignedBy.toLowerCase() === currentUser.name.toLowerCase())).length})
+          </button>
+          <button
+            id="btn-queue-all"
+            onClick={() => setQueueFilter('all')}
+            className={`flex-1 sm:flex-initial cursor-pointer px-4 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+              queueFilter === 'all'
+                ? 'bg-blue-600 text-white shadow-md font-extrabold'
+                : 'text-slate-400 hover:text-slate-205 hover:bg-slate-800/40'
+            }`}
+          >
+            📁 All tickets ({myTickets.length})
           </button>
         </div>
       </div>
