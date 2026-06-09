@@ -30,7 +30,9 @@ import {
   Cloud,
   Database,
   Sun,
-  Moon
+  Moon,
+  ArrowLeft,
+  Home
 } from 'lucide-react';
 import { SUPABASE_SQL_SETUP } from './lib/supabaseClient';
 
@@ -109,6 +111,14 @@ function AppContent() {
   const navigateToTicket = (id: string) => {
     setSelectedTicketId(id);
     setActiveTab('ticket_detail');
+  };
+
+  const goHome = () => {
+    if (currentUser) {
+      const isPowerRole = ['Super Admin', 'Supervisor'].includes(currentUser.role);
+      setActiveTab(isPowerRole ? 'dashboard' : 'my_tickets');
+      setSelectedTicketId(null);
+    }
   };
 
   const handleCreateSuccess = () => {
@@ -525,9 +535,16 @@ function AppContent() {
           
           {/* Breadcrumb Indicator */}
           <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium font-mono">
-            <span>Home</span>
-            <ChevronRight className="w-3 h-3" />
-            <span className="text-slate-300 capitalize">{activeTab.replace('_', ' ')}</span>
+            <button
+              id="breadcrumb-home"
+              onClick={goHome}
+              className="hover:text-blue-400 hover:underline cursor-pointer transition flex items-center gap-1 select-none font-bold"
+            >
+              <Home className="w-3 h-3" />
+              <span>Home</span>
+            </button>
+            <ChevronRight className="w-3 h-3 text-slate-600" />
+            <span className="text-slate-300 capitalize font-bold">{activeTab.replace(/_/g, ' ')}</span>
           </div>
 
           {/* Supabase status setup and seeding panel */}
@@ -626,11 +643,11 @@ function AppContent() {
           )}
 
           {activeTab === 'user_management' && currentUser.role === 'Super Admin' && (
-            <UserManagement />
+            <UserManagement onBack={goHome} />
           )}
 
           {activeTab === 'user_list' && currentUser.role !== 'Agent' && (
-            <UserList />
+            <UserList onBack={goHome} />
           )}
 
           {activeTab === 'my_tickets' && (
@@ -641,7 +658,7 @@ function AppContent() {
           )}
 
           {activeTab === 'create_ticket' && (
-            <CreateTicket onSuccess={handleCreateSuccess} />
+            <CreateTicket onSuccess={handleCreateSuccess} onCancel={goHome} />
           )}
 
 

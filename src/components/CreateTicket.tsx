@@ -1,14 +1,15 @@
 import React, { useState, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { TicketCategory, TicketPriority } from '../types';
-import { FileUp, Clipboard, ShieldAlert, Sparkles, Image as ImageIcon, X } from 'lucide-react';
+import { FileUp, Clipboard, ShieldAlert, Sparkles, Image as ImageIcon, X, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface CreateTicketComponentProps {
   onSuccess: () => void;
+  onCancel?: () => void;
 }
 
-export default function CreateTicket({ onSuccess }: CreateTicketComponentProps) {
+export default function CreateTicket({ onSuccess, onCancel }: CreateTicketComponentProps) {
   const { addTicket, users } = useApp();
   const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
@@ -105,16 +106,28 @@ export default function CreateTicket({ onSuccess }: CreateTicketComponentProps) 
   ];
 
   return (
-    <div className="bg-[#0d1527] rounded-2xl border border-slate-800/80 p-6 md:p-8 shadow-sm">
-      <div className="flex items-center gap-3 border-b border-slate-800 pb-4 mb-6">
-        <div className="p-2 rounded-lg bg-blue-600/15 text-blue-400 border border-blue-500/10">
-          <Clipboard className="w-5 h-5" />
+    <div className="space-y-4">
+      {onCancel && (
+        <button 
+          type="button"
+          onClick={onCancel}
+          className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-slate-105 transition cursor-pointer self-start"
+        >
+          <ArrowLeft className="w-4 h-4 text-blue-450" />
+          Back to Ticket Queue
+        </button>
+      )}
+      
+      <div className="bg-[#0d1527] rounded-2xl border border-slate-800/80 p-6 md:p-8 shadow-sm">
+        <div className="flex items-center gap-3 border-b border-slate-800 pb-4 mb-6">
+          <div className="p-2 rounded-lg bg-blue-600/15 text-blue-400 border border-blue-500/10">
+            <Clipboard className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-lg text-slate-100">Create a New Ticket</h3>
+            <p className="text-slate-400 text-xs font-medium">Raise a new support ticket. Our team responds within 2 hours.</p>
+          </div>
         </div>
-        <div>
-          <h3 className="font-semibold text-lg text-slate-100">Create a New Ticket</h3>
-          <p className="text-slate-400 text-xs font-medium">Raise a new support ticket. Our team responds within 2 hours.</p>
-        </div>
-      </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid md:grid-cols-12 gap-6">
@@ -312,14 +325,24 @@ export default function CreateTicket({ onSuccess }: CreateTicketComponentProps) 
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition border border-slate-700/60 cursor-pointer"
+            >
+              Cancel / Cancel Creation
+            </button>
+          )}
           <button
             type="submit"
-            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition shadow-md shadow-blue-500/10 cursor-pointer"
+            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition shadow-md shadow-blue-500/10 cursor-pointer"
           >
             Create Support Ticket
           </button>
         </div>
       </form>
     </div>
-  );
+  </div>
+);
 }

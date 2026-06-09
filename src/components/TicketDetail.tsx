@@ -44,10 +44,17 @@ export default function TicketDetail({ ticketId, onBack }: TicketDetailProps) {
   // Finding components
   const ticket = tickets.find(t => t.id === ticketId);
 
-  if (ticket && (ticket.status !== prevTicketStatus || ticket.id !== prevTicketId)) {
+  const currentAssigned = ticket ? (ticket.assignedTo || ticket.assignedBy || '') : '';
+  const [prevAssigned, setPrevAssigned] = useState<string>('');
+  const [stagedAssign, setStagedAssign] = useState<string>('');
+  const [assignSaveSuccess, setAssignSaveSuccess] = useState(false);
+
+  if (ticket && (ticket.status !== prevTicketStatus || ticket.id !== prevTicketId || currentAssigned !== prevAssigned)) {
     setPrevTicketStatus(ticket.status);
     setPrevTicketId(ticket.id);
     setStagedStatus(ticket.status);
+    setPrevAssigned(currentAssigned);
+    setStagedAssign(currentAssigned);
   }
   if (!ticket) {
     return (
@@ -131,7 +138,15 @@ export default function TicketDetail({ ticketId, onBack }: TicketDetailProps) {
   };
 
   const handleAssignChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    assignTicket(ticket.id, e.target.value);
+    setStagedAssign(e.target.value);
+  };
+
+  const handleAssignSubmit = () => {
+    assignTicket(ticket.id, stagedAssign);
+    setAssignSaveSuccess(true);
+    setTimeout(() => {
+      setAssignSaveSuccess(false);
+    }, 2000);
   };
 
   const isUserOwner = currentUser?.id === ticket.userId;
@@ -423,12 +438,12 @@ export default function TicketDetail({ ticketId, onBack }: TicketDetailProps) {
                 {['Super Admin', 'Supervisor'].includes(currentUser?.role || '') ? (
                   <div>
                     <label className="block text-[10px] font-extrabold text-[#38bdf8] uppercase tracking-widest mb-1.5">
-                      Assign IT Specialist
+                      Assign Specialist
                     </label>
                     <select
-                      value={ticket.assignedTo || ticket.assignedBy || ''}
+                      value={stagedAssign}
                       onChange={handleAssignChange}
-                      className="w-full px-3 py-2.5 bg-[#141f35] border border-slate-700/60 rounded-xl text-xs focus:outline-none focus:border-blue-500 focus:bg-[#1a2948] transition text-slate-100 font-bold"
+                      className="w-full px-3 py-2.5 bg-[#141f35] border border-slate-700/60 rounded-xl text-xs focus:outline-none focus:border-blue-500 focus:bg-[#1a2948] transition text-slate-100 font-bold cursor-pointer"
                     >
                       <option value="" className="bg-[#141f35]">👤 Unassigned</option>
                       {users.map(u => (
@@ -437,11 +452,41 @@ export default function TicketDetail({ ticketId, onBack }: TicketDetailProps) {
                         </option>
                       ))}
                     </select>
+
+                    {stagedAssign !== currentAssigned && (
+                      <div className="mt-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-2">
+                        <p className="text-[10px] font-bold text-amber-300 leading-normal">
+                          ⚠️ Specialist selection altered. Submit to confirm change.
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={handleAssignSubmit}
+                            className="flex-1 py-1.5 px-3 bg-[#334155] text-white hover:bg-[#475569] hover:text-white text-[11px] font-extrabold rounded-lg shadow hover:scale-[1.01] transition duration-150 cursor-pointer border border-slate-600"
+                          >
+                            Submit Change
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setStagedAssign(currentAssigned)}
+                            className="py-1.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-bold rounded-lg transition border border-slate-700/60 cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {assignSaveSuccess && (
+                      <div className="mt-2 p-2 bg-emerald-500/15 border border-emerald-500/20 text-emerald-400 font-bold text-[10px] rounded-lg text-center animate-feed animate-[pulse_1.5s_infinite]">
+                        ✓ Specialist updated successfully!
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div>
                     <span className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1">
-                      Assigned IT Specialist
+                      Assigned Specialist
                     </span>
                     <div className="p-3 bg-[#10192d] border border-slate-800/80 rounded-xl flex items-center justify-between">
                       <span className="text-xs text-slate-400">Specialist:</span>

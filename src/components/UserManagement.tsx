@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Role, User } from '../types';
-import { UserPlus, Users, Key, Mail, Shield, Building, Hash, Eye, EyeOff, Edit2, XCircle, Trash2, User as UserIcon } from 'lucide-react';
+import { UserPlus, Users, Key, Mail, Shield, Building, Hash, Eye, EyeOff, Edit2, XCircle, Trash2, User as UserIcon, ArrowLeft } from 'lucide-react';
 
-export default function UserManagement() {
+interface UserManagementProps {
+  onBack?: () => void;
+}
+
+export default function UserManagement({ onBack }: UserManagementProps) {
   const { users, registerUser, updateUser, deleteUser, currentUser } = useApp();
   
   // State for tracking the user being edited administratively
@@ -131,7 +135,17 @@ export default function UserManagement() {
   };
 
   return (
-    <div className="space-y-6 text-slate-100">
+    <div className="space-y-4 text-slate-100">
+      {onBack && (
+        <button 
+          type="button"
+          onClick={onBack}
+          className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-slate-105 transition cursor-pointer self-start mb-2"
+        >
+          <ArrowLeft className="w-4 h-4 text-blue-450" />
+          Back to Dashboard
+        </button>
+      )}
       
       {/* Dynamic Header */}
       <div className="flex items-center gap-3 bg-[#0d1527] p-6 rounded-2xl border border-slate-800/80 shadow-sm justify-between flex-wrap">

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Role, User } from '../types';
-import { Search, Mail, Building, Hash, Shield, UserCheck, AlertCircle, Edit, X, Key, Eye, EyeOff, Save, User as UserIcon } from 'lucide-react';
+import { Search, Mail, Building, Hash, Shield, UserCheck, AlertCircle, Edit, X, Key, Eye, EyeOff, Save, User as UserIcon, ArrowLeft } from 'lucide-react';
 
 const ROLE_DETAILS: Record<Role, { label: string; badgeStyle: string; icon: string }> = {
   'Agent': { label: 'Support Desk Agent', badgeStyle: 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20', icon: '📞' },
@@ -9,7 +9,11 @@ const ROLE_DETAILS: Record<Role, { label: string; badgeStyle: string; icon: stri
   'Super Admin': { label: 'Master Systems Admin', badgeStyle: 'bg-rose-500/10 text-rose-400 border border-rose-500/20', icon: '👑' },
 };
 
-export default function UserList() {
+interface UserListProps {
+  onBack?: () => void;
+}
+
+export default function UserList({ onBack }: UserListProps) {
   const { users, updateUser, currentUser } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
@@ -116,7 +120,17 @@ export default function UserList() {
   };
 
   return (
-    <div className="space-y-6 text-slate-100">
+    <div className="space-y-4 text-slate-100">
+      {onBack && (
+        <button 
+          type="button"
+          onClick={onBack}
+          className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-slate-105 transition cursor-pointer self-start mb-2"
+        >
+          <ArrowLeft className="w-4 h-4 text-blue-455" />
+          Back to Dashboard
+        </button>
+      )}
       
       {/* Title Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0d1527] p-6 rounded-2xl border border-slate-800/80 shadow-sm">
