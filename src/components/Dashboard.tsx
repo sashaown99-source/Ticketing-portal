@@ -108,7 +108,7 @@ export default function Dashboard({ onSelectTicket }: DashboardProps) {
       t.description.replace(/\n/g, ' '),
       t.priority,
       t.status,
-      t.assignedTo || 'Unassigned',
+      t.assignedTo || t.assignedBy || 'Unassigned',
       new Date(t.createdAt).toLocaleString(),
       new Date(t.updatedAt).toLocaleString()
     ]);
@@ -440,7 +440,7 @@ export default function Dashboard({ onSelectTicket }: DashboardProps) {
                       </td>
                       <td className="px-5 py-3.5">
                         <select
-                          value={ticket.assignedTo || ''}
+                          value={ticket.assignedTo || ticket.assignedBy || ''}
                           onClick={e => e.stopPropagation()}
                           onChange={e => assignTicket(ticket.id, e.target.value)}
                           className="px-2 py-1.5 bg-[#141f35] border border-slate-700/60 rounded-lg text-[10px] text-slate-200 font-bold focus:outline-none cursor-pointer"

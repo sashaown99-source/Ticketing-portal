@@ -461,6 +461,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       priority,
       status: 'Open',
       screenshotUrl,
+      assignedTo: assignedBy,
       assignedBy,
       assignedDepartment,
       assignedRole,
@@ -474,7 +475,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newLog: AuditLog = {
       id: `LOG-${Date.now()}`,
       ticketId: newId,
-      action: `Created ticket assigned to role: ${assignedRole || 'Unassigned'}`,
+      action: `Created ticket assigned to: ${assignedBy || 'Unassigned'}`,
       performedBy: currentUser.name,
       createdAt: new Date().toISOString()
     };
@@ -491,7 +492,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       priority,
       status: 'Open',
       screenshot_url: screenshotUrl || null,
-      assigned_to: null,
+      assigned_to: assignedBy || null,
       assigned_by: assignedBy || null,
       assigned_department: assignedDepartment || null,
       assigned_role: assignedRole || null,
@@ -625,6 +626,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return {
           ...t,
           assignedTo: assignedToName,
+          assignedBy: assignedToName,
           updatedAt: currentTimestamp
         };
       }
@@ -644,6 +646,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Async sync to Supabase for tickets with assignment, and audit_log
     supabase.from('tickets').update({
       assigned_to: assignedToName,
+      assigned_by: assignedToName,
       updated_at: currentTimestamp
     }).eq('id', ticketId).then(({ error }) => {
       if (error) console.error("assignTicket sync failed:", error);

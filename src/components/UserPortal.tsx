@@ -52,7 +52,7 @@ export default function UserPortal({ onSelectTicket, onOpenCreate }: UserPortalP
       t.description.replace(/\n/g, ' '),
       t.priority,
       t.status,
-      t.assignedTo || 'Unassigned',
+      t.assignedTo || t.assignedBy || 'Unassigned',
       new Date(t.createdAt).toLocaleString(),
       new Date(t.updatedAt).toLocaleString()
     ]);

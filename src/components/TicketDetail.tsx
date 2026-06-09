@@ -365,7 +365,7 @@ export default function TicketDetail({ ticketId, onBack }: TicketDetailProps) {
                   </div>
                   <div>
                     <span className="block text-[10px] font-bold text-slate-450 uppercase tracking-wider mb-1">Assigned Specialist</span>
-                    <span className="text-xs font-semibold text-slate-300">{ticket.assignedTo || 'Unassigned'}</span>
+                    <span className="text-xs font-semibold text-slate-300">{ticket.assignedTo || ticket.assignedBy || 'Unassigned'}</span>
                   </div>
                 </div>
               </div>
@@ -426,7 +426,7 @@ export default function TicketDetail({ ticketId, onBack }: TicketDetailProps) {
                       Assign IT Specialist
                     </label>
                     <select
-                      value={ticket.assignedTo || ''}
+                      value={ticket.assignedTo || ticket.assignedBy || ''}
                       onChange={handleAssignChange}
                       className="w-full px-3 py-2.5 bg-[#141f35] border border-slate-700/60 rounded-xl text-xs focus:outline-none focus:border-blue-500 focus:bg-[#1a2948] transition text-slate-100 font-bold"
                     >
@@ -445,7 +445,7 @@ export default function TicketDetail({ ticketId, onBack }: TicketDetailProps) {
                     </span>
                     <div className="p-3 bg-[#10192d] border border-slate-800/80 rounded-xl flex items-center justify-between">
                       <span className="text-xs text-slate-400">Specialist:</span>
-                      <span className="text-xs font-semibold text-slate-300">{ticket.assignedTo || 'Unassigned'}</span>
+                      <span className="text-xs font-semibold text-slate-300">{ticket.assignedTo || ticket.assignedBy || 'Unassigned'}</span>
                     </div>
                   </div>
                 )}
